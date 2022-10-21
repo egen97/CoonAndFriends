@@ -1,8 +1,10 @@
 # CoonAndFriends
 
-## Hack for peace
+## The idea
 
 We aim to create a continuous content analysis using quantitative text analysis methods such as topic modelling to map how the Russian people perceive the war in Ukraine. We'll do this using blog posts from Telegram, VK and other relevant sources. Understanding different perspectives is fundamental to converse, negotiate and prevent conflict. It can also be used to target the most effective or pressing areas for internal change.
+
+## General setup
 
 	1. Data fetching
 	
@@ -30,5 +32,3 @@ We aim to create a continuous content analysis using quantitative text analysis 
 		c. And telegram channels
 		d. The "Putin-meter"
 		
-Graphs from topic modelling and sentiment analysis![image](https://user-images.githubusercontent.com/39405720/197246288-130c75d0-7249-4154-a0dc-fef122769d1b.png)
-
