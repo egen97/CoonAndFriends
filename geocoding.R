@@ -78,3 +78,4 @@ SUSFU3 <- SUSFU2 %>%
   full_join(please, by = c("cities" = "value"))
 
 
+saveRDS(SUSFU3, "Data/map_data.rds")
