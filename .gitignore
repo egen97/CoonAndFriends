@@ -29,3 +29,4 @@ vignettes/*.pdf
 CoonAndFriends.Rproj
 secure/*
 *.rds
+.RDataTmp
