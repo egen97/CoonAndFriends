@@ -20,3 +20,8 @@ telegram_posts <- list.files("Data/telegram_rds/")
 
 
 telegram_posts <- lapply(paste0("Data/telegram_rds/", telegram_posts), readRDS)
+
+
+translated_texts <- lapply(telegram_posts, translator)
+
+test <- translator(telegram_posts[[1]])
