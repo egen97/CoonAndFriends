@@ -11,9 +11,9 @@ russian_text <- "Почему у меня такие сухие глаза, ме
 telegram_text <- readRDS("russorientalist_telegram.rds")
 
 
-testData <- telegram_text[2:11,]
+testData <- telegram_text[1:11,]
 
-1
+
 
 hello_world <- gl_translate(
   testData$text,
@@ -41,3 +41,36 @@ translator <- function(x, text = text) {
 hello <- translator(telegram_text[1:20,])
 
 hello
+
+telegram_text
+
+
+
+hello_world <- gl_translate(
+  testData$text,
+  target = "en"
+)
+
+hello_world <- hello_world %>%
+  select(translatedText, detectedSourceLanguage) %>%
+  bind_cols(testData)
+
+
+
+translator <- function(x, text = text) {
+    df <- googleLanguageR::gl_translate(
+    x$text,
+    target = "en"
+  )
+  df <- dplyr::select(df, translatedText, detectedSourceLanguage)
+  df <- bind_cols(df, x)
+  return(df)
+}
+
+please <- translator(testData)
+
+
+
+
+
+
