@@ -69,7 +69,7 @@ translator <- function(x, text = text) {
 
 please <- translator(testData)
 
-
+cat(please$translatedText[7])
 
 
 
