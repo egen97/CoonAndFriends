@@ -43,7 +43,6 @@ please <- please %>%
 
 
 
-register_google("AIzaSyBtVplVw4uwulSBRtONA_rVBGxiBHktK38")
 
 please <- please %>%
   mutate_geocode(cityName, output = "more", source = "google")
