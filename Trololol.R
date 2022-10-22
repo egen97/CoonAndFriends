@@ -1,7 +1,6 @@
 pacman::p_load(googleway, ggmap, tidyverse, sf, mapview)
 
 
-gmaps_key <- "AIzaSyBxhs71v6qXOCXG6wIdy9WXeq94e_QxNHw"
 
 register_google(key = gmaps_key, write = TRUE)
 
