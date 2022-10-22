@@ -1,6 +1,6 @@
 pacman::p_load(googleway, ggmap, tidyverse, sf, mapview)
 
-
+source("C:/Users/jonassc/OneDrive - Universitetet i Oslo/Desktop/Hack4Peace/key.txt")
 
 register_google(key = gmaps_key, write = TRUE)
 
@@ -10,8 +10,7 @@ a <- c("Donetsk", "Kyiv", "Kharkiv")
 
 a <- tibble(town = c("Donetsk", "Kyiv", "Kharkiv")) %>%
    mutate_geocode(town)
-
-
+gsg
 
 map <- a %>%
 st_as_sf(coords = c("lon",  "lat")) %>%
