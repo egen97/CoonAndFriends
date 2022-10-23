@@ -9,10 +9,11 @@ We aim to create a continuous content analysis using quantitative text analysis 
 	1. Data fetching
 	
 	a. MVP
-		a. Identify channels we'd like to scrape (20-30 channels?)
-		b. Run scraper on the texts
-		c. Run the texts through a translator
-		d. Post translated version back to telegram?
+		a. Identify channels we'd like to scrape (20-30 channels?) X
+		b. Run scraper on the texts X
+		c. Run the texts through a translator X
+	
+		d. Post translated version back to telegram -  Solveig
 	
 	b. Automate:
 		a. Script runs every hour
@@ -20,14 +21,18 @@ We aim to create a continuous content analysis using quantitative text analysis 
 		c. Upload translated file to dropbox
 	
 	2. Analyze
-		a. Priority: Entity recognition
+		a. Priority: Entity recognition 
+			1. Dictionary with fuzzy search
+			2. Spacy
+		Output: Unit = date_place, variable = the channels mentioning the place at that date
+		 - Starting from 1. january 2022
 		
 		b. If time: 
 			i. Sentiment analysis (dictonary methods)
 			ii. Topic modelling
 	
 	3. Present
-		a. Dashboard
+		a. Dashboard/shiny app
 		b. With a map
 		c. And telegram channels
 		d. The "Putin-meter"
