@@ -71,5 +71,5 @@ vader_sentiment <- please %>%
   mutate(across(everything(), ~ifelse(.x == "NA", NA, .x)))
 
 
-saveRDS(vader_sentiment, "Data/vader_sentiment_agg.rds")
 
+saveRDS(vader_sentiment, "Data/vader_sentiment_agg.rds")
