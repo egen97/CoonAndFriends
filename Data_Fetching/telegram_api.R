@@ -3,7 +3,7 @@ library(tidyverse)
 library(stringr)
 library(jsonlite)
 
-#system('python scrape_telegram.py')
+#system('scrape_telegram.py')
 
 jsons <- list.files("./channel_jsons/", full.names = TRUE)
 

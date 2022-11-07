@@ -3,7 +3,7 @@ library(tidyverse)
 library(tidytext)
 library(vader)
 
-locs <- read_rds("./geocoded_Translations_2.rds")
+locs <- read_rds("./geocoded_Translations.rds")
 locs <- bind_rows(locs)
 
 locs_sub <- locs %>% select(translatedText, id, source, cities, oblast)

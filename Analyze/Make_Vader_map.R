@@ -2,7 +2,7 @@ pacman::p_load(mapview, sf, tidyverse)
 
 
 
-map_data<- readRDS("C:/Users/jonassc/OneDrive - Universitetet i Oslo/Desktop/Hack4Peace/vader_sentiments.rds")
+map_data<- readRDS("vader_sentiments.rds")
 
 
 
@@ -46,7 +46,7 @@ plotmap <- left_join(plotmap, a%>% rename(Bloggercount = n), by = c("cities", "d
 plotmap$sd_sentiment <- if_else(is.na(plotmap$sd_sentiment) & plotmap$Bloggercount == 1, 0, plotmap$sd_sentiment )
 
 
-geocode<- readRDS("C:/Users/jonassc/OneDrive - Universitetet i Oslo/Desktop/Hack4Peace/map_data.rds")
+geocode<- readRDS("map_data.rds")
 
 names(geocode)
 geocode <- geocode %>% ungroup() %>% select(lon, lat, cities, cityName) %>%distinct()
@@ -63,7 +63,7 @@ plotmap2 <- plotmap2 %>%
 
 
 
-saveRDS(plotmap2, "C:/Users/jonassc/OneDrive - Universitetet i Oslo/Desktop/Hack4Peace/vadermap_prepped.rds")
+saveRDS(plotmap2, "vadermap_prepped.rds")
 
 
 

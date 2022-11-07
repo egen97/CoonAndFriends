@@ -2,19 +2,19 @@ library(peacePHDs)
 library(tidyverse)
 library(ggmap)
 
-#### Add cities (data is on google drive) ####
+#### Add cities ####
 translated_files <- list.files("telegram_translated/")
 
-translations <- lapply(paste0("telegram_translated/", translated_files)[c(1,3:16)], readRDS)
+translations <- lapply(paste0("telegram_translated/", translated_files)[c(1,3:16)], readRDS) #File 2. was corrupted for unkown reasons
 geocoded <- lapply(translations, city_mutate)
 
-geocoded2 <- lapply(geocoded, oblast_mutate)
+geocoded <- lapply(geocoded, oblast_mutate)
 
-saveRDS(geocoded2, "geocoded_Translations_2.rds")
+saveRDS(geocoded, "geocoded_Translations.rds")
 
 ### Add coordinates ####
 
-TeleGramData <- readRDS("Data/geocoded_Translations_2.rds")
+TeleGramData <- readRDS("Data/geocoded_Translations.rds")
 
 #Find all cities
 
@@ -25,7 +25,7 @@ cities <- as_tibble(cities) %>%
   filter(value != "")
 
 
-cities2 <- cities %>%
+cities <- cities %>%
   separate(value, into = c("city_a","city_b","city_c", "city_d",
                            "city_e", "city_f", "city_g", "city_h",
                            "city_i", "city_j", "city_k", "city_l", "city_m",
@@ -33,26 +33,26 @@ cities2 <- cities %>%
            fill = "right",  sep = ",")
 
 
-df2 <- as.vector(as.matrix(cities2))
-please <- unique(df2)
+cityMatrix <- as.vector(as.matrix(cities))
+cityMatrix <- unique(cityMatrix)
 
-please <- as_tibble(please)
+city_tibble <- as_tibble(city_tibble)
 
-please <- please %>%
+city_tibble <- city_tibble %>%
   mutate(cityName = paste(value, ", Ukraine"))
 
 
 
 
-please <- please %>%
+city_tibble <- city_tibble %>%
   mutate_geocode(cityName, output = "more", source = "google")
 
 
-View(TeleGramData[[1]])
 
 
 
-SUSFU <- snafu %>%
+
+SUSFU <- snafu %>% #Finner ikke hva snafu var
   select(cities, source, date) %>%
   group_by(source, date) %>%
   distinct(cities, .keep_all = TRUE) %>%

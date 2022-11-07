@@ -2,9 +2,9 @@
 library(tidyverse)
 library(tidytext)
 library(googleLanguageR)
-googleLanguageR::gl_auth("./coon-and-friends-63a76c0b9ce6.json")
+googleLanguageR::gl_auth()
 
-locs <- read_rds("./geocoded_Translations_2.rds")
+locs <- read_rds("./geocoded_Translations.rds")
 locs <- bind_rows(locs)
 
 locs_sub <- locs %>% select(translatedText, id, source, cities, oblast)
