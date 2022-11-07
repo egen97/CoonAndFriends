@@ -10,6 +10,6 @@ While some of these war blogs are already used as valuable sources by a handful 
 
 This repository includes the code we made during the Hack4Peace event 2022. Here, we used the telegram API to automatically download all posts on the selected channels from 01.01.2022 – 21.10.2022, translated them to English using the Google translate API, and ran sentiment analyses using Google’s natural language processing algorithm and Vader’s unsupervised classification algorithm. Using entity recognition, we further identified all Ukrainian cities mentioned in the posts and used the Google Maps API to geolocate them.
 
-The package with the function used in this project can be found here: https://github.com/egen97/peacePHDs 
+The package with the functions used in this project can be found here: https://github.com/egen97/peacePHDs 
 
 Please see https://solveig.shinyapps.io/prototype/ to view the prototype.
