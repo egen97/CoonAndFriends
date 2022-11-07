@@ -32,6 +32,9 @@ ui <-  dashboardPage(skin = "black",
 
     sidebarMenu(
 
+      menuItem("Welcome!",
+               tabName = "welcome"),
+
       menuItem("Map",
                tabName = "map"),
 
@@ -39,7 +42,10 @@ ui <-  dashboardPage(skin = "black",
                tabName = "telegram"),
 
       menuItem("The Putin-meter",
-               tabName = "putin")
+               tabName = "putin"),
+
+      menuItem("Who are we?",
+               tabName = "whoarewe")
 
     )),
 
@@ -47,7 +53,30 @@ ui <-  dashboardPage(skin = "black",
 
     tabItems(
 
+      tabItem(tabName = "welcome",
+
+              h2("Welcome to OSINT: Telegram!"),
+
+              column(12,
+                     br(),
+                     p("At OSINT: Telegram, we have automatically collected, translate and analysed more than 300,000 telegram posts from 19 of Russia’s biggest pro-War telegram channels to make them accessible to researchers, journalists and the interested public."),
+                     p("While some of these war blogs are already used as valuable sources by a handful of analysists and journalists, the information is spread out, only available in Russian, and not easily available for systematic analysis. We want to change this, and make the data available for the interested public!"),
+                     p("For the Hack4Peace, our team used the telegram API to automatically download all posts on the selected channels from 01.01.2022 – 21.10.2022, translated them to English using the Google translate API, and ran sentiment analyses using Google’s natural language processing algorithm and Vader’s unsupervised classification algorithm. Using entity recognition, we further identified all Ukrainian cities mentioned in the posts and used the Google Maps API to geolocate them."),
+                     br(),
+                     p("On this webpage, you can currently get a glimpse at three of the things we already did with this data:"),
+                     p("On the map page, you can access an interactive map giving you a day-by-day overview of which Ukrainian cities the Russian warbloggers were talking about. Moreover, the map currently includes three key variables: First, for each city it indicates the average sentiment for each city among the bloggers who mentioned it. This indicates how the general mood related to the location is on a giveb day. Second, the standard deviation of the sentiment score. This illustrates how much internal disagreement there is among Russia’s warbloggers concerning a place at a given time. Lastly, we show the number of bloggers mentioning a location on a given day, illustrating how much attention the warbloggers are paying to a particular place. Currently, the map is only using the sentiment scores estimated by our Vader model."),
+                     br(),
+                     p("On the telegram translated page, you can find a link to our automated telegram channel. The channel collects all posts by a blogger on a day, and posts the English translations of all posts on this day."),
+                     br(),
+                     p("On the Putin-Meter page, you can – unsurprisingly – access our Putin-Meter. For the Putin-Meter, we analyse all Posts mentioning Vladimir Putin, and how positively or negatively he is talked about. Currently, we have separate Putin-Meter for each of the bloggers, that illustrates how positively or negatively they were talking about Putin and how this changed over the course of the war."),
+                     br(),
+                     p("In the near future, we will implement automated daily updates of the data to keep tracking the communication of Russian warbloggers. We are also planning to add more bloggers to our list, and to make the raw data available for the general public."),
+              )
+
+              ),
+
       tabItem(tabName = "map",
+
               h2("Where do they talk about?"),
 
               h5("From telegram posts starting 01-01-2022"),
@@ -121,10 +150,32 @@ ui <-  dashboardPage(skin = "black",
               column(width = 12,
                      plotlyOutput("sentplot", width = "100%", height = 600))
 
+              ),
+
+      tabItem(tabName = "whoarewe",
+
+              h2("Who are we?"),
+
+              column(3,
+                     img(src = "us.png", heigh = "100%", width = "100%", alight = "right")),
+
+              h4("Amalie Nilsen"),
+              h4("Eric Gabo Ekeberg Nilsen"),
+              h4("Jonas Willibald Schmid"),
+              h4("Solveig Bjørkholt"),
+              h6("PhD candidates at the University of Oslo"),
+
+              column(12,
+                     br(),
+                     p(""))
+
+
               )
 
-      )
-    ))
+    )
+  )
+)
+
 
 server <- function(input, output, session) {
 
