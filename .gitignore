@@ -29,3 +29,5 @@ vignettes/*.pdf
 .Renviron
 CoonAndFriends.Rproj
 .RDataTmp
+russorientalist_telegram.rds
+ukr_cities.rds
