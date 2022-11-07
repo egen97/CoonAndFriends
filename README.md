@@ -1,39 +1,15 @@
-# CoonAndFriends
+# Welcome to OSINT Telegram!
 
-## The idea
+With OSINT: Telegram, we have automatically collected, translated and analysed more than 300,000 telegram posts from 19 of Russia’s biggest pro-War telegram channels to make them accessible to researchers, journalists and the interested public.
 
-We aim to create a continuous content analysis using quantitative text analysis methods such as topic modelling to map how the Russian people perceive the war in Ukraine. We'll do this using blog posts from Telegram, VK and other relevant sources. Understanding different perspectives is fundamental to converse, negotiate and prevent conflict. It can also be used to target the most effective or pressing areas for internal change.
+While some of these war blogs are already used as valuable sources by a handful of analysists and journalists, the information is spread out, only available in Russian, and not easily available for systematic analysis. We want to change this, and make the data available for the interested public! With this solution, we aim to:
 
-## General setup
+ - Create transparency and awareness in the international community around war propaganda.
+ - Make research data available that could be used for analytic purposes, including predicting war actions.
+ - Offer a tool to follow and understand the development of the war through Telegram bloggers.
 
-	1. Data fetching
-	
-	a. MVP
-		a. Identify channels we'd like to scrape (20-30 channels?) X
-		b. Run scraper on the texts X
-		c. Run the texts through a translator X
-	
-		d. Post translated version back to telegram -  Solveig
-	
-	b. Automate:
-		a. Script runs every hour
-		b. Send to translator 
-		c. Upload translated file to dropbox
-	
-	2. Analyze
-		a. Priority: Entity recognition 
-			1. Dictionary with fuzzy search
-			2. Spacy
-		Output: Unit = date_place, variable = the channels mentioning the place at that date
-		 - Starting from 1. january 2022
-		
-		b. If time: 
-			i. Sentiment analysis (dictonary methods)
-			ii. Topic modelling
-	
-	3. Present
-		a. Dashboard/shiny app
-		b. With a map
-		c. And telegram channels
-		d. The "Putin-meter"
-		
+This repository includes the code we made during the Hack4Peace event 2022. Here, we used the telegram API to automatically download all posts on the selected channels from 01.01.2022 – 21.10.2022, translated them to English using the Google translate API, and ran sentiment analyses using Google’s natural language processing algorithm and Vader’s unsupervised classification algorithm. Using entity recognition, we further identified all Ukrainian cities mentioned in the posts and used the Google Maps API to geolocate them.
+
+The package with the function used in this project can be found here: https://github.com/egen97/peacePHDs 
+
+Please see https://solveig.shinyapps.io/prototype/ to view the prototype.
