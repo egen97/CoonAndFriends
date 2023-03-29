@@ -8,24 +8,24 @@ img = cv2.imread(imagePath)
 
 # Here, you define your target color as
 # a tuple of three values: RGB
-green = [250,184,185] #Ehm,ce ist red
+red = [233,150,122]
 #Over 255 > out of bounds
-
+#red = [250,184,185]
 # [233,150,122] - Russian controlled Ukrainian terriritory before 24 feb 
 
 # 250,184,185,255
 
 # You define an interval that covers the values
-# in the tuple and are below and above them by 20
-diff = 40
+# in the tuple and are below and above them by diff
+diff = 70
 
 # Be aware that opencv loads image in BGR format,
 # that's why the color values have been adjusted here:
-boundaries = [([green[2], green[1]-diff, green[0]-diff],
-           [green[2]+diff, green[1]+diff, green[0]+diff])]
+boundaries = [([red[2], red[1]-diff, red[0]-diff],
+           [red[2]+diff, red[1]+diff, red[0]+diff])]
            
            
-# Clip the values in boundaries to be between 0 and 255 (thx chatGPT <3)
+# Clip the values in boundaries to be between 0 and 255 
 boundaries = np.clip(boundaries, 0, 255)           
 
 # Scale your BIG image into a small one:
@@ -74,15 +74,15 @@ for (lower, upper) in boundaries:
     # You can use the mask to count the number of white pixels.
     # Remember that the white pixels in the mask are those that
     # fall in your defined range, that is, every white pixel corresponds
-    # to a green pixel. Divide by the image size and you got the
-    # percentage of green pixels in the original image:
-    ratio_green = cv2.countNonZero(mask)/(img.size/3)
+    # to a red pixel. Divide by the image size and you got the
+    # percentage of red pixels in the original image:
+    ratio_red = cv2.countNonZero(mask)/(img.size/3)
 
     # This is the color percent calculation, considering the resize I did earlier.
-    colorPercent = (ratio_green * 100) / scalePercent
+    colorPercent = (ratio_red * 100) / scalePercent
 
     # Print the color percent, use 2 figures past the decimal point
-    print('green pixel percentage:', np.round(colorPercent, 15))
+    print('red pixel percentage:', np.round(colorPercent, 15))
 
     # numpy's hstack is used to stack two images horizontally,
     # so you see the various images generated in one figure:
