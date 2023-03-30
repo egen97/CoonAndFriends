@@ -1,6 +1,6 @@
 library(rvest)
 library(tidyverse)
-
+### Pictures ####
 url <- "https://www.understandingwar.org/backgrounder/ukraine-conflict-updates-2022"
 webpage <- read_html(url)
 
@@ -42,3 +42,4 @@ for (i in 1:length(img_urls)) {
 library(av)
 
 av_video_images("Data/pictures/movie/isw_interactive.mp4", destdir = "Data/pictures/movie", fps = 1)
+#The pictures are from a screencapture of

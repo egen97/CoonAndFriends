@@ -1,25 +1,47 @@
----
-title: "Occupied Area Documentation"
-author: "Solveig Bjørkholt, Eric G.E Nilsen, Jonas W. Schmid,  Amalie Nilsen"
-format: 
-    html: default
-    gfm: default
-editor: visual
----
+Occupied Area Documentation
+================
+Solveig Bjørkholt, Eric G.E Nilsen, Jonas W. Schmid, Amalie Nilsen
 
 ## Institute for the Study of War Maps
 
-The source of the data are from the *Institute for the Study of War* an american think-tank working on defence and foreign affairs. They have been posting analyses of the Ukraine war since its beginning (having already studied the conflict since Russia's annexation of Crimea). The map is updated monthly, meaning that the data downloaded covers the period 22.02.2022 to 28.02.2023, with daily updates on the movement of the front-line. A description of ISW's methods used can be found [here](https://www.understandingwar.org/sites/default/files/Cartographical%20Methodology%20Explanation%20ISW%20CTP%202022.pdf). The map was downloaded utilising a screen-capture of the website found [here](https://storymaps.arcgis.com/stories/733fe90805894bfc8562d90b106aa895).
+The source of the data are from the *Institute for the Study of War* an
+american think-tank working on defence and foreign affairs. They have
+been posting analyses of the Ukraine war since its beginning (having
+already studied the conflict since Russia’s annexation of Crimea). The
+map is updated monthly, meaning that the data downloaded covers the
+period 22.02.2022 to 28.02.2023, with daily updates on the movement of
+the front-line. A description of ISW’s methods used can be found
+[here](https://www.understandingwar.org/sites/default/files/Cartographical%20Methodology%20Explanation%20ISW%20CTP%202022.pdf).
+The map was downloaded utilising a screen-capture of the website found
+[here](https://storymaps.arcgis.com/stories/733fe90805894bfc8562d90b106aa895).
 
-Having done that the file was split into single frames using the code below (found in the script "Data_Fetching/isw_maps"). Each day covers roughly 1 frame, which is why the sampling-frequency was set to 1fps. It does however mean that some day is showed by more than one frame. It also means that there is not a perfect correlation between file-name (img1, img2, and so forth) and the date of the picture. This is one thing needed to fix before we can utilise the data.
+Having done that the file was split into single frames using the code
+below (found in the script “Data_Fetching/isw_maps”). Each day covers
+roughly 1 frame, which is why the sampling-frequency was set to 1fps. It
+does however mean that some day is showed by more than one frame. It
+also means that there is not a perfect correlation between file-name
+(img1, img2, and so forth) and the date of the picture. This is one
+thing needed to fix before we can utilise the data.
 
-```{r, eval=FALSE}
+``` r
 av_video_images("Data/pictures/movie/isw_interactive.mp4", destdir = "Data/pictures/movie", fps = 1)
 ```
 
-The next step (not yet performed) is to run the following python code (Found in "Data_Fetching/pythontest.py") to calculate the area under Russian occupation. The different red colours show the assessed, quality-controlled, areas under Russian occupation or where Russia is advancing. The solution therefore is to just calculate how large an area of the map is covered by this colour. It is important to note that the map does *not show the percentage of Ukraine that is occupied.* As the map covers an area slightly larger than Ukraine (showing aprts of Belarus, Poland, and Romania) what we are interested in (or, at least, can measure) is how the occupied territories change showing the degree of Russian success. The python script needs to be rewritten to a higher degree of quality, as well as to be able to run on all the files and store the results.
+The next step (not yet performed) is to run the following python code
+(Found in “Data_Fetching/pythontest.py”) to calculate the area under
+Russian occupation. The different red colours show the assessed,
+quality-controlled, areas under Russian occupation or where Russia is
+advancing. The solution therefore is to just calculate how large an area
+of the map is covered by this colour. It is important to note that the
+map does *not show the percentage of Ukraine that is occupied.* As the
+map covers an area slightly larger than Ukraine (showing aprts of
+Belarus, Poland, and Romania) what we are interested in (or, at least,
+can measure) is how the occupied territories change showing the degree
+of Russian success. The python script needs to be rewritten to a higher
+degree of quality, as well as to be able to run on all the files and
+store the results.
 
-```{python, eval = FALSE}
+``` python
 #Based on https://stackoverflow.com/questions/66757199/color-percentage-in-image-for-python-using-opencv
 import cv2
 import numpy as np
@@ -110,5 +132,4 @@ for (lower, upper) in boundaries:
     # so you see the various images generated in one figure:
     cv2.imshow("images", np.hstack([img, output]))
     cv2.waitKey(0)
-
 ```
