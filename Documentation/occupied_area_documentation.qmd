@@ -1,0 +1,10 @@
+---
+title: "Occupied Area Documentation"
+author: "Solveig Bjørkholt, Eric G.E Nilsen, Jonas W. Schmid,  Amalie Nilsen"
+format: html
+editor: visual
+---
+
+## Institute for the Study of War Maps
+
+The source of the data are from the *Institute for the Study of War* an american think-thank working on defence and foreign affairs. They have been posting analyses of the Ukraine war since its beginning (having already studied the conflict since Russia's annexation of Crimea). The map is updated monthly, meaning that the data downloaded covers the period 22.02.2022 to 28.02.2023, with daily updates on the movement of the front-line. A description of ISW's methods used can be found [here](https://www.understandingwar.org/sites/default/files/Cartographical%20Methodology%20Explanation%20ISW%20CTP%202022.pdf). The map was downloaded utilising a screen-capture of the website found [here](https://storymaps.arcgis.com/stories/733fe90805894bfc8562d90b106aa895).
