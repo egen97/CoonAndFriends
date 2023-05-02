@@ -5,7 +5,7 @@ library(tidyverse)
 library(jsonlite)
 library(httr)
 
-bottoken <- "5619805180:AAGF4fK4NhmWuKtaR2LF1En9xu5C9V5ks_8"
+bottoken <- ""
 
 files <- list.files("./telegram_translated/", full.names = TRUE)
 
