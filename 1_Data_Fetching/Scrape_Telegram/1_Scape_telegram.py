@@ -1,8 +1,12 @@
 
 
+# Run this in PowerShell first to activate virtual environment: env/Scripts/Activate.ps1
+# python -m venv env
+
+# py .\1_Scape_telegram.py
+
 import configparser
 import json
-import asyncio
 from datetime import date, datetime
 
 from telethon import TelegramClient
@@ -12,6 +16,27 @@ from telethon.tl.types import (
     PeerChannel
 )
 
+#client.start()
+#client.run_until_disconnected()
+
+api_id = 
+api_hash = ''
+bot_token = ''
+client = TelegramClient('coon_scrapes_telegram', api_id, api_hash)
+
+# Reading Configs
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+# Setting configuration values
+
+api_id = config['Telegram']['api_id']
+api_hash = config['Telegram']['api_hash']
+
+api_hash = str(api_hash)
+
+phone = config['Telegram']['phone']
+username = config['Telegram']['username']
 
 # some functions to parse json date
 class DateTimeEncoder(json.JSONEncoder):
@@ -24,33 +49,6 @@ class DateTimeEncoder(json.JSONEncoder):
 
         return json.JSONEncoder.default(self, o)
 
-
-# Reading Configs
-#### MAKE A CONFIG FILE looking like:
-
-#[Telegram]
-
-# you can get telegram development credentials in telegram API Development Tools
-#api_id = 
-#api_hash = 
-
-# use full phone number including + and country code
-#phone = 
-#username = 
-
-####
-
-config = configparser.ConfigParser()
-config.read("config.ini")
-
-# Setting configuration values
-api_id = config['Telegram']['api_id']
-api_hash = config['Telegram']['api_hash']
-
-api_hash = str(api_hash)
-
-phone = config['Telegram']['phone']
-username = config['Telegram']['username']
 
 # Create the client and connect
 client = TelegramClient(username, api_id, api_hash)
@@ -105,8 +103,8 @@ async def main(phone):
         if total_count_limit != 0 and total_messages >= total_count_limit:
             break
 
-    with open('channel_messages.json', 'w') as outfile:
-        json.dump(all_messages, outfile, default=str, cls=DateTimeEncoder)
+    with open('bolshiepushki.json', 'w') as outfile:
+        json.dump(all_messages, outfile, default=str) #cls=DateTimeEncoder)
 
 with client:
     client.loop.run_until_complete(main(phone))
