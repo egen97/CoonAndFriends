@@ -3,9 +3,9 @@ import os
 import csv
 import numpy as np
 
-# Define the target color and color range (in RGB format)
-#target_color = (245,480,176)
-target_color = (176, 180, 245)  # OpenCV uses BGR channel ordring, and not RGB.
+
+#target_color = (176, 180, 245)  # OpenCV uses BGR channel ordring, and not RGB.
+target_color = (177,181,246)
 color_range = 20 #50  # range of 20 looks fine (at least for the first image).
 
 # Define the folder containing the images
@@ -41,6 +41,9 @@ with open(output_file, 'w', newline='') as csvfile:
             num_pixels = img.shape[0] * img.shape[1]
             target_pixels = cv2.countNonZero(mask)
             percentage = (target_pixels / num_pixels) * 100
+            print(num_pixels, "num")
+            print(target_pixels, "tar")
+            print(percentage, "per")
 
             # Write the filename and percentage to the CSV file
             writer.writerow([filename, percentage])

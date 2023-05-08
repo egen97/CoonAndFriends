@@ -9,7 +9,7 @@ color_range = 20
 
 
 # Define the folder containing the images
-folder = "Data/pictures/renamed/"
+folder = "Data/pictures/test/"
 
 # Define the path to the output CSV file
 output_file = "Data/pictures/area.csv"
@@ -40,6 +40,6 @@ with open(output_file, 'w', newline='') as csvfile:
             num_pixels = img.shape[0] * img.shape[1]
             target_pixels = cv2.countNonZero(mask)
             percentage = (target_pixels / num_pixels) * 100
-
+            print(percentage)
             # Write the filename and percentage to the CSV file
             writer.writerow([filename, percentage])
