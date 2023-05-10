@@ -9,7 +9,7 @@ target_color = (177,181,246)
 color_range = 20 #50  # range of 20 looks fine (at least for the first image).
 
 # Define the folder containing the images
-folder = "Data/pictures/test/"
+folder = "Data/pictures/renamed/"
 
 # Define the path to the output CSV file
 output_file = "Data/pictures/area.csv"
