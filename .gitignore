@@ -38,3 +38,6 @@ Documentation/occupied_area_documentation_files/
 *.session
 config
 env
+/Credentials
+/Data
+

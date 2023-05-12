@@ -40,14 +40,14 @@ library(stringr)
 # Calls the ChatGPT API with the given prompt and returns the answer
 ask_chatgpt <- function(prompt) {
   response <- POST(
-    url = "https://api.openai.com/v1/chat/completions", 
+    url = "https://api.openai.com/v1/chat/completions", ## ADD TEMPERATURE
     add_headers(Authorization = paste("Bearer", api_key)),
     content_type_json(),
     encode = "json",
     body = list(
       model = "gpt-3.5-turbo",
       messages = list(list(
-        role = "user", 
+        role = "user",
         content = prompt
       ))
     )
@@ -59,8 +59,8 @@ ask_chatgpt <- function(prompt) {
 #answer <- ask_chatgpt("Can you help me find the sentiment of some Telegram posts in Russian?")
 cat(answer)
 
-# Yes, as an AI language model, I can help you analyze the sentiment of Telegram posts in Russian. 
-# However, I will need access to the text of the posts you want me to analyze. 
+# Yes, as an AI language model, I can help you analyze the sentiment of Telegram posts in Russian.
+# However, I will need access to the text of the posts you want me to analyze.
 # Please provide me with the text, and I will do my best to determine the sentiment.
 
 
@@ -92,9 +92,9 @@ cat(answer4)
 #answer5 <- ask_chatgpt(paste0("From a Russian point of view, what is the sentiment of this Telegram post: ' ", russian_df$text[4], "' ?"))
 cat(answer5)
 
-# From a Russian point of view, the sentiment of this Telegram post is likely to be neutral or slightly positive. 
-# The post reports on the destruction of Ukrainian energy infrastructure, which could be seen as a positive development for Russia in the context of tensions between the two countries. 
-# The use of the Russian flag emojis also suggests a sense of national pride or support for actions taken by Russian forces in Ukraine. 
+# From a Russian point of view, the sentiment of this Telegram post is likely to be neutral or slightly positive.
+# The post reports on the destruction of Ukrainian energy infrastructure, which could be seen as a positive development for Russia in the context of tensions between the two countries.
+# The use of the Russian flag emojis also suggests a sense of national pride or support for actions taken by Russian forces in Ukraine.
 # However, the language used in the post itself is relatively neutral and factual, without any overt expressions of joy or celebration.
 
 russian_df$text[4]
@@ -105,12 +105,12 @@ english_df$text[4]
 
 ## DV1: How likely is it that Putin is mentioned?
 # Russian president / our president / Putin / maybe ask marina
-# Probability that Putin is mentioned 
+# Probability that Putin is mentioned
 
 ## DV2:
 # Filter out posts where Putin is mentioned
-# Anchor the API - "imagine that..." , tell it where the data is from, say that it's a war, say that Putin is mentioned, 
-# something like "how is putin portrayed?" - make a scale / dimensions 
+# Anchor the API - "imagine that..." , tell it where the data is from, say that it's a war, say that Putin is mentioned,
+# something like "how is putin portrayed?" - make a scale / dimensions
 # Supportive, satisfied, think is competent? 5-scale (somewhat, neutral, etc.)
 # Something about a Russian point of view (perspective)
 
