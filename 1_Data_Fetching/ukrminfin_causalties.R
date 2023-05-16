@@ -118,35 +118,5 @@ merged_df <- merged_df %>%
 
 saveRDS(merged_df, "Data/russian_losses.rds")
 
-#### Graphs ####
-merged_df %>%
-  pivot_longer(2:ncol(.), names_to = "type", values_to = "loss") %>%
-    mutate(
-      type =
-        case_when(
-        type == "causalties" ~ "Casualties",
-        type == "tanks" ~ "Tanks",
-        type == "planes" ~ "Planes",
-        type == "armored_veichle" ~ "Armored Vehicle",
-        type == "cannons" ~ "Cannons",
-        type == "cars_cisterns" ~  "Cars and Cisterns",
-        type == "cruise_misils" ~ "Cruise Missile",
-        type == "helicopters" ~ "Helicopters",
-        type == "mlrs" ~ "Multiple Launch Rocket System",
-        type == "ships" ~ "Ships",
-        type == "uav" ~ "Drone"
-      )
-    ) %>%
-    ggplot(aes(date, loss, colour = type)) +
-    geom_line() +
-    geom_smooth(se = FALSE) +
-    facet_wrap(~type, scales = "free_y") +
-    ggthemes::theme_excel_new() +
-    labs(
-      title = "Russian Losses in Ukraine",
-      tag = "Note the differing Y-axis",
-      subtitle = "Collected by the Ukrainin Ministry of Defence",
-      caption = 'Source: Ukranian Ministry of Finance, "Casualties of the Russian troops in Ukraine", https://index.minfin.com.ua/en/russian-invading/casualties/'
-  ) +
-  guides(colour = "none")
+
 
