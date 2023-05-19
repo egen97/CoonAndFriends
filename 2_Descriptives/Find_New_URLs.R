@@ -1,12 +1,12 @@
 
 library(tidyverse)
 
-telegrams_cleaned <- readRDS("../Data/telegrams_cleaned.rds")
+telegrams_cleaned <- readRDS("./Data/telegrams_cleaned.rds")
 
 #### URLs that have been embedded in the post ####
 urls <- telegrams_cleaned %>%
   select(source, entity) %>%
-  unnest() %>% 
+  unnest() %>%
   na.omit() %>%
   group_by(MessageEntityTextUrl) %>%
   count(sort = TRUE)
@@ -19,7 +19,7 @@ forwarded_channels <- telegrams_cleaned %>%
   group_by(fwd_from.from_id.channel_id) %>%
   count(sort = TRUE)
 
-current_channels <- telegrams_cleaned %>% 
+current_channels <- telegrams_cleaned %>%
   select(peer_id.channel_id) %>%
   unique() %>%
   pull()
@@ -36,7 +36,7 @@ forwarded_channels <- forwarded_channels %>%
 # How to look at a channel by the channel-id?
 # Type this into your browser: https://web.telegram.org/k/#
 # Then add -XXXXXXXXXX behind the #, where each X represents a number in the channel-id
-# For example like so: https://web.telegram.org/k/#-1109403194 
+# For example like so: https://web.telegram.org/k/#-1109403194
 
 ## 2. You cannot provide the channel-id directly to the API scraper without first providing the channel name
 # https://arabic-telethon.readthedocs.io/en/stable/extra/basic/entities.html
