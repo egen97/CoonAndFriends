@@ -7,10 +7,10 @@ library(httr)
 
 validation_sample <- read_rds("./Data/Validation_Samples/Validation_Sample_3.RDS")
 
-validation_sample2 <- validation_sample[1:3,]
+#validation_sample2 <- validation_sample[1:3,]
 
-create_prompt <- function(validation_sample2){
-  prompts <- purrr::map2(validation_sample2$message, validation_sample2$rowid,
+create_prompt <- function(validation_sample){
+  prompts <- purrr::map2(validation_sample$message, validation_sample$rowid,
 
                          ~list(
 
@@ -60,11 +60,11 @@ create_prompt <- function(validation_sample2){
 
                                ## WAR PROGRESS ##
 
-                               "State_of_war: How does the post describe the current state of the war for Russia? Pick one of the following categories: 1 (bad), 2 (neutral), 3 (good) or 0 (not applicable). ",
+                               "State_of_war: How does the post describe the current state of the war for Russia? Pick one of the following categories: 1 (bad), 2 (neutral), 3 (good), 0 (not applicable). ",
 
-                               "Responsibilty: Does the post explicitly assign responsibility for how the war is going to Putin? Pick one of the following categories: 1 (not responsible at all), 2 (somewhat responsible), 3 (fully responsible) or 0 (not applicable). ",
+                               "Responsibilty: Does the post explicitly assign responsibility for how the war is going to Putin? Pick one of the following categories: 1 (not responsible), 2 (responsible), 0 (not applicable). ",
 
-                               "Response: How does the post think Russia should continue the war? Pick one of the following categories: 1 (escalate the war), 2 (continue as it is), 3 (reduce the war effort) or 0 (not applicable). ",
+                               "Response: How does the post think Russia should continue the war? Pick one of the following categories: 1 (escalate the war), 2 (de-escalate the war), 0 (not applicable). ",
 
                                ## TEMPLATE ##
 
@@ -87,8 +87,8 @@ create_prompt <- function(validation_sample2){
                                "Competence: number from 1 to 3 | category | justification \n\n",
                                ## War progress ##
                                "State_of_war: number from 0 to 3 | category | justification \n\n",
-                               "Responsibility: number from 0 to 3 | category | justification \n\n",
-                               "Response: number from 0 to 3 | category | justification \n\n",
+                               "Responsibility: number from 0 to 2 | category | justification \n\n",
+                               "Response: number from 0 to 2 | category | justification \n\n",
                                ## Other ##
                                "Other remarks: ")
                            )
@@ -98,7 +98,7 @@ create_prompt <- function(validation_sample2){
 }
 
 
-prompts <- create_prompt(validation_sample2)
+prompts <- create_prompt(validation_sample)
 prompts
 
 api_key <- read_lines("./Credentials/api_key_chatgpt")
@@ -130,9 +130,9 @@ openai_total_tokens <- list()
 completion <- "start"
 i <- 1
 
-while(!identical(completion, character(0)) & i < nrow(validation_sample2)){
+while(!identical(completion, character(0)) & i < nrow(validation_sample)){
 
-  for(i in 1:nrow(validation_sample2)){
+  for(i in 1:nrow(validation_sample)){
 
     response <- POST(
       url = "https://api.openai.com/v1/chat/completions",
@@ -159,14 +159,14 @@ while(!identical(completion, character(0)) & i < nrow(validation_sample2)){
   }
 }
 
-completions2 <- do.call(rbind, openai_completions)
+completions <- do.call(rbind, openai_completions)
 
-tokenuse2 <- tibble(prompt_tokens = unlist(openai_prompt_tokens),
+tokenuse <- tibble(prompt_tokens = unlist(openai_prompt_tokens),
                    completion_tokens = unlist(openai_completion_tokens),
                    total_tokens = unlist(openai_total_tokens))
 
 
-completions_df2 <- as_tibble(completions2, .name_repair = "universal") %>%
+completions_df <- as_tibble(completions, .name_repair = "universal") %>%
   rename(post = `...1`) %>%
   separate(post, into = c("rowid",
                           "ukraine", "west",
