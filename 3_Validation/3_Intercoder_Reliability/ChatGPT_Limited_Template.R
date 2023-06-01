@@ -1,13 +1,18 @@
 
-##### CHAT GPT TEMPLATE RUN #####
+##### INTERCODER RELIABILITY CHECK #####
 
 library(tidyverse)
 library(stringr)
 library(httr)
 
-validation_sample <- read_rds("./Data/Validation_Samples/Validation_Sample_3.RDS")
+validation_sample <- read_rds("./Data/Validation_Samples/CrossCoding/Validation_Sample_100.RDS")
 
-#validation_sample2 <- validation_sample[1:3,]
+# leftouts <- as.character(validation_sample$rowid)[!as.character(validation_sample$rowid) %in% c(str_squish(completions_df$rowid), str_squish(completions_df$rowid))]
+#
+# validation_sample2 <- validation_sample %>%
+#   filter(rowid %in% as.numeric(leftouts))
+
+#### AI coder ####
 
 create_prompt <- function(validation_sample){
   prompts <- purrr::map2(validation_sample$message, validation_sample$rowid,
@@ -34,9 +39,9 @@ create_prompt <- function(validation_sample){
 
                                ## FOCUS ##
 
-                               "Ukraine: Is the post negative or positive towards Ukraine? Pick one of the following categories: 1 (negative), 2 (neutral), 3 (positive), 0 (not applicable). ",
+                               "Ukraine: Is the post negative or positive towards Ukraine? Pick one of the following categories: 1 (negative), 2 (neutral), 3 (positive), 0 (no statement about Ukraine). ",
 
-                               "West: Is the post negative or positive towards the West, the US, EU, NATO or European countries? Pick one of the following categories: 1 (negative), 2 (neutral), 3 (positive), 0 (not applicable). ",
+                               "West: Is the post negative or positive towards the West, the US, EU, NATO or European countries? Pick one of the following categories: 1 (negative), 2 (neutral), 3 (positive), 0 (no statement about the West). ",
 
                                "Putin: Just because Putin is mentioned in all posts, it does not mean that he is necessarily the main focus of the post. Is Putin the main focus of this post, or is something else the main focus? Pick one of the following categories: 1 (Putin), 2 (something else), 0 (unclear). ",
 
@@ -46,25 +51,19 @@ create_prompt <- function(validation_sample){
 
                                "Sentiment: Is the post positive or negative towards Putin specifically? Pick one of the following categories: 1 (negative), 2 (neutral), 3 (positive). ",
 
-                               #"Praise: Does the post praise or critique Putin specifically? Pick one of the following categories: 1 (critique), 2 (neither critique nor praise), 3 (praise).",
-
                                ## TRUST ##
 
-                               "Trust: Does the post express distrust or trust towards Putin as a leader? Pick one of the following categories: 1 (distrust), 2 (neither distrust nor trust), 3 (trust). ",
-
-                               #"Approve: Does the post express skepticism or approval towards Putin specifically? Pick one of the following categories: 1 (skepticism), 2 (neither skepticism nor approval), 3 (approval). ",
-
-                               "Favorable: Is the post hostile or favorable towards Putin specifically? Pick one of the following categories: 1 (hostile), 2 (indifferent), 3 (favorable). ",
+                               "Trust: Does the post express distrust or trust towards Putin specifically? Pick one of the following categories: 1 (distrust), 2 (neither distrust nor trust), 3 (trust). ",
 
                                "Competence: Does the post portray Putin specifically as competent or incompetent? Pick one of the following categories: 1 (incompetent), 2 (neither competent nor incompetent), 3 (competent). ",
 
                                ## WAR PROGRESS ##
 
-                               "State_of_war: How does the post describe the current state of the war for Russia? Pick one of the following categories: 1 (bad), 2 (neutral), 3 (good), 0 (not applicable). ",
+                               "State_of_war: How does the post describe the current state of the war for Russia? Pick one of the following categories: 1 (bad), 2 (neutral), 3 (good), 0 (no description of the war). ",
 
-                               "Responsibilty: Does the post explicitly assign responsibility for how the war is going to Putin? Pick one of the following categories: 1 (not responsible), 2 (responsible), 0 (not applicable). ",
+                               "Responsibility: Does the post explicitly assign responsibility for how the war is going to Putin specifically? Pick one of the following categories: 1 (Putin is not responsible), 2 (Putin is somewhat responsible), 3 (Putin is fully responsible), 0 (Putin is not explicitly assigned responsibility).  ",
 
-                               "Response: How does the post think Russia should continue the war? Pick one of the following categories: 1 (escalate the war), 2 (de-escalate the war), 0 (not applicable). ",
+                               "Response: How does the post think Russia should continue the war? Pick one of the following categories: 1 (escalate the war), 2 (de-escalate the war), 0 (no statement). ",
 
                                ## TEMPLATE ##
 
@@ -79,15 +78,12 @@ create_prompt <- function(validation_sample){
                                ## Support ##
                                "Support: number from 1 to 3 | category | justification \n\n",
                                "Sentiment: number from 1 to 3 | category | justification \n\n",
-                               #"Praise: number from 1 to 3 | category | justification \n\n",
                                ## Trust ##
                                "Trust: number from 1 to 3 | category | justification \n\n",
-                               #"Approve: number from 1 to 3 | category | justification \n\n",
-                               "Favorable: number from 1 to 3 | category | justification \n\n",
                                "Competence: number from 1 to 3 | category | justification \n\n",
                                ## War progress ##
                                "State_of_war: number from 0 to 3 | category | justification \n\n",
-                               "Responsibility: number from 0 to 2 | category | justification \n\n",
+                               "Responsibility: number from 0 to 3 | category | justification \n\n",
                                "Response: number from 0 to 2 | category | justification \n\n",
                                ## Other ##
                                "Other remarks: ")
@@ -99,28 +95,9 @@ create_prompt <- function(validation_sample){
 
 
 prompts <- create_prompt(validation_sample)
-prompts
 
 api_key <- read_lines("./Credentials/api_key_chatgpt")
 
-# submit_prompt <- function(prompt, temperature = 0.0, n = 1) {
-#   response <- POST(
-#     url = "https://api.openai.com/v1/chat/completions",
-#     add_headers(Authorization = paste("Bearer", api_key)),
-#     content_type_json(),
-#     encode = "json",
-#     body = list(
-#       model = "gpt-3.5-turbo",
-#       temperature = temperature,
-#       messages = prompt,
-#       n = n))
-#   Sys.sleep(10)
-#   message(paste0("Finished post."))
-#   str_trim(content(response)$choices[[1]]$message$content)
-# }
-#
-# openai_completions <- prompts %>%
-#   purrr::map(submit_prompt)
 
 openai_completions <- list()
 openai_prompt_tokens <- list()
@@ -152,7 +129,7 @@ while(!identical(completion, character(0)) & i < nrow(validation_sample)){
     openai_completion_tokens[[i]] <- str_trim(content(response)$usage$completion_tokens)
     openai_total_tokens[[i]] <- str_trim(content(response)$usage$total_tokens)
 
-    Sys.sleep(5)
+    Sys.sleep(8)
 
     message(paste0("Finished post no. ", i))
 
@@ -162,8 +139,8 @@ while(!identical(completion, character(0)) & i < nrow(validation_sample)){
 completions <- do.call(rbind, openai_completions)
 
 tokenuse <- tibble(prompt_tokens = unlist(openai_prompt_tokens),
-                   completion_tokens = unlist(openai_completion_tokens),
-                   total_tokens = unlist(openai_total_tokens))
+                    completion_tokens = unlist(openai_completion_tokens),
+                    total_tokens = unlist(openai_total_tokens))
 
 
 completions_df <- as_tibble(completions, .name_repair = "universal") %>%
@@ -171,8 +148,8 @@ completions_df <- as_tibble(completions, .name_repair = "universal") %>%
   separate(post, into = c("rowid",
                           "ukraine", "west",
                           "putin",
-                          "support", "sentiment", #"praise",
-                          "trust", "favorable", "competence", #"approve",
+                          "support", "sentiment",
+                          "trust", "competence",
                           "state_of_war", "responsibility", "response",
                           "other"), "\n\n") %>%
   mutate(rowid = str_remove_all(rowid, "PostID ")) %>%
@@ -196,22 +173,10 @@ completions_df <- as_tibble(completions, .name_repair = "universal") %>%
          sentiment_category = str_remove_all(str_trim(str_remove_all(str_extract(sentiment, "\\|.*\\|"), "\\|")), "\\)|\\("),
          sentiment_justification = str_trim(str_remove_all(sentiment, "[0-9] \\|.*\\| ")),
          sentiment = str_extract(sentiment, "[0-9]")) %>%
-  # mutate(praise = str_remove(praise, "Praise: "),
-  #        praise_category = str_remove_all(str_trim(str_remove_all(str_extract(praise, "\\|.*\\|"), "\\|")), "\\)|\\("),
-  #        praise_justification = str_trim(str_remove_all(praise, "[0-9] \\|.*\\| ")),
-  #        praise = str_extract(praise, "[0-9]")) %>%
   mutate(trust = str_remove(trust, "Trust: "),
          trust_category = str_remove_all(str_trim(str_remove_all(str_extract(trust, "\\|.*\\|"), "\\|")), "\\)|\\("),
          trust_justification = str_trim(str_remove_all(trust, "[0-9] \\|.*\\| ")),
          trust = str_extract(trust, "[0-9]")) %>%
-  # mutate(approve = str_remove(approve, "Approve: "),
-  #        approve_category = str_remove_all(str_trim(str_remove_all(str_extract(approve, "\\|.*\\|"), "\\|")), "\\)|\\("),
-  #        approve_justification = str_trim(str_remove_all(approve, "[0-9] \\|.*\\| ")),
-  #        approve = str_extract(approve, "[0-9]")) %>%
-  mutate(favorable = str_remove(favorable, "Favorable: "),
-         favorable_category = str_remove_all(str_trim(str_remove_all(str_extract(favorable, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         favorable_justification = str_trim(str_remove_all(favorable, "[0-9] \\|.*\\| ")),
-         favorable = str_extract(favorable, "[0-9]")) %>%
   mutate(competence = str_remove(competence, "Competence: "),
          competence_category = str_remove_all(str_trim(str_remove_all(str_extract(competence, "\\|.*\\|"), "\\|")), "\\)|\\("),
          competence_justification = str_trim(str_remove_all(competence, "[0-9] \\|.*\\| ")),
@@ -235,53 +200,15 @@ completions_df <- as_tibble(completions, .name_repair = "universal") %>%
                 putin, putin_category, putin_justification,
                 support, support_category, support_justification,
                 sentiment, sentiment_category, sentiment_justification,
-                #praise, praise_category, praise_justification,
                 trust, trust_category, trust_justification,
-                #approve, approve_category, approve_justification,
-                favorable, favorable_category, favorable_justification,
                 competence, competence_category, competence_justification,
                 state_of_war, state_of_war_category, state_of_war_justification,
                 responsibility, responsibility_category, responsibility_justification,
                 response, response_category, response_justification,
                 other)
 
-#saveRDS(completions_df, file = "./Data/Chat testruns/completions_df.rds")
-#openxlsx::write.xlsx(completions_df, "./Data/Chat testruns/completions_df.xlsx")
+#### SAVE ####
 
-
-#### MERGING WITH ENGLISH AND RUSSIAN POSTS ####
-
-# telegrams_cleaned <- readRDS("./Data/telegrams_cleaned.rds")
-#
-# #### Create validation sample with the translated posts as well ####
-#
-# files <- list.files("./Data/Channel_Translated/", full.names = TRUE)
-#
-# telegrams_english <- lapply(files, read_rds)
-#
-# telegrams_english <- map(telegrams_english, .f = list(. %>% dplyr::select(source, date, id, message, detectedSourceLanguage, translatedText)))
-#
-# telegrams_english <- do.call(rbind, telegrams_english)
-#
-# telegrams_joined <- telegrams_english %>%
-#   left_join(telegrams_cleaned, join_by(source, date, id, message)) %>%
-#   mutate(message = ifelse(message == "", NA, message)) %>%
-#   filter(str_detect(message, "(?i)путин[а-я]*|владимир\\s*владимирович\\s*путин|владимир\\s*путин")) %>%
-#   drop_na(message)
-
-# completions_df_full <- completions_df %>%
-#   mutate(rowid = as.numeric(rowid)) %>%
-#   left_join(telegrams_joined %>%
-#               select(rowid, source, date, message, translatedText),
-#             join_by(rowid))
-#
-# completions_df_en_final <- completions_df_en_full %>%
-#   select(source, date, rowid,
-#          message, translatedText,
-#          opposition, opposition_justification,
-#          competence, competence_justification,
-#          responsibility, responsibility_justification,
-#          state_of_the_war, state_of_the_war_justification,
-#          response, response_justification,
-#          other)
-
+saveRDS(tokenuse, file = "./3_Validation/3_Intercoder_Reliability/fourthrun/tokenuse.rds")
+saveRDS(completions_df, file = "./3_Validation/3_Intercoder_Reliability/fourthrun/completions_df.rds")
+openxlsx::write.xlsx(completions_df, file = "./3_Validation/3_Intercoder_Reliability/fourthrun/ChatGPT_codings.xlsx")
