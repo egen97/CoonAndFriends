@@ -2,6 +2,11 @@ library(tidyverse)
 
 losses <- readRDS("Data/russian_losses.rds")
 territory <- readRDS("Data/occupied_area.rds")
+territory %>%
+  mutate(change = actuall_area - lag(actuall_area)) %>%
+  view()
+
+
 
 losses %>%
   pivot_longer(2:ncol(.), names_to = "type", values_to = "loss") %>%
@@ -81,6 +86,24 @@ territory_plot <- territory %>%
   labs(title = "Occupied Area") +
   ggthemes::theme_excel_new() +
   scale_y_continuous(labels = scales::percent_format(scale = 1))
+
+
+losses %>%
+  left_join(territory) %>%
+  select(-date, -Percentage) %>%
+  drop_na() %>% View()
+  cor(.) %>%
+  corrplot(method = "number")
+
+
+losses %>%
+  mutate(total = rowSums(across(where(~is.numeric(.x) && !contains("caus"))))) %>%
+  left_join(territory) %>%
+  select(actuall_area, total, causalties) %>%
+  cor(., use = "pairw") %>%
+  corrplot(method = "number")
+
+
 
 
 saveRDS(territory_plot, "Data/graphics/losses/occupied_area.rds")
