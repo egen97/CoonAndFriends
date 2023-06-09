@@ -116,6 +116,11 @@ merged_df <- loss_df %>%
 merged_df <- merged_df %>%
   mutate(across(2:ncol(.), ~ifelse(is.na(.x), 0, .x)))
 
+territory <- readRDS("Data/occupied_area.rds")
+
+merged_df <- merged_df %>%
+  full_join(territory, by  = "date")
+
 saveRDS(merged_df, "Data/russian_losses.rds")
 
 
