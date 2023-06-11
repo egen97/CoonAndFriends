@@ -184,25 +184,39 @@ intercoder_df <- bind_rows(
   unnest(cols = c(alpha, n, p, standardized, name)) %>%
   spread(var, alpha) %>%
   dplyr::select(name, n, ukraine, west, putin, support, sentiment, trust, competence, state_of_war, responsibility, response) %>%
-  mutate(type = ifelse(name %in% c("amalie_eric", "amalie_jonas", "eric_solveig", "jonas_solveig"), 1,
-                       ifelse(name %in% c("amalie_eric_chatgpt_1", "amalie_jonas_chatgpt_1", "eric_solveig_chatgpt_1", "jonas_solveig_chatgpt_1"), 2,
-                              ifelse(name %in% c("chatgpts"), 3,
+  mutate(type = ifelse(name %in% c("amalie_eric", "amalie_jonas", "eric_solveig", "jonas_solveig"), "Only humans",
+                       ifelse(name %in% c("amalie_eric_chatgpt_1", "amalie_jonas_chatgpt_1", "eric_solveig_chatgpt_1", "jonas_solveig_chatgpt_1"), "Humans and AI",
+                              ifelse(name %in% c("chatgpts"), "Only AI",
                                      name))))
 
-intercoder_df %>%
+mean_alpha <- intercoder_df %>%
   group_by(type) %>%
   gather(ukraine, west, putin, support, sentiment, trust, competence, state_of_war, responsibility, response,
          key = "Variable", value = "Alpha") %>%
   summarise(mean_cronbachs_alpha = mean(Alpha, na.rm = TRUE))
 
-intercoder_df %>%
+knitr::kable(mean_alpha) %>%
+  kableExtra::kable_styling()
+
+mean_alpha_pairs <- intercoder_df %>%
   group_by(type, name) %>%
   gather(ukraine, west, putin, support, sentiment, trust, competence, state_of_war, responsibility, response,
          key = "Variable", value = "Alpha") %>%
   summarise(mean_cronbachs_alpha = mean(Alpha, na.rm = TRUE))
 
+knitr::kable(mean_alpha_pairs) %>%
+  kableExtra::kable_styling()
 
-intercoder_df %>%
+mean_alpha_per_question <- intercoder_df %>%
+  gather(ukraine, west, putin, support, sentiment, trust, competence, state_of_war, responsibility, response,
+         key = "Variable", value = "Alpha") %>%
+  group_by(type, Variable) %>%
+  summarise(mean_cronbachs_alpha = mean(Alpha, na.rm = TRUE))
+
+knitr::kable(mean_alpha_per_question) %>%
+  kableExtra::kable_styling()
+
+alpha_per_var <- intercoder_df %>%
   mutate(type = factor(type)) %>%
   mutate(name = factor(name, levels = c("amalie_eric", "amalie_jonas", "eric_solveig", "jonas_solveig",
                                         "amalie_eric_chatgpt_1", "amalie_jonas_chatgpt_1", "eric_solveig_chatgpt_1", "jonas_solveig_chatgpt_1",
@@ -220,6 +234,13 @@ intercoder_df %>%
   labs(x = "", y = "Cronbach's Alpha")+
   theme_minimal() +
   theme(legend.position = "none")
+
+
+saveRDS(intercoder_df, file = "./3_Validation/3_Intercoder_Reliability/Cronbachs/intercoder_reliability.rds")
+saveRDS(intercoder_df, file = "./3_Validation/3_Intercoder_Reliability/Cronbachs/mean_alpha.rds")
+saveRDS(intercoder_df, file = "./3_Validation/3_Intercoder_Reliability/Cronbachs/mean_alpha_pairs.rds")
+ggsave(alpha_per_var, file = "./3_Validation/3_Intercoder_Reliability/Cronbachs/alpha_per_var.png", width = 15, height = 10)
+
 
 
 intercoder_df %>%
