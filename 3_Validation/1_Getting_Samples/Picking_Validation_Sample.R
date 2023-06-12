@@ -22,6 +22,8 @@ telegrams_joined <- telegrams_english %>%
   filter(str_detect(message, "(?i)путин[а-я]*|владимир\\s*владимирович\\s*путин|владимир\\s*путин")) %>%
   drop_na(message)
 
+test <- telegrams_joined %>% filter(date == "2022-05-05") %>%
+  dplyr::select(rowid, source, date, id, message, translatedText)
 
 #### How many times is "Putin" mentioned in the overall data? ####
 
