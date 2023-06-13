@@ -1,5 +1,10 @@
 pacman::p_load(tidyverse, coefplot, stargazer)
 
+zero_log <- function(x){
+  x <- ifelse(x == 0, 0, log(x))
+  return(x)
+}
+
 losses <- readRDS("Data/russian_losses.rds")
 
 posts <- readRDS("Data/EPSA data/coded_posts.rds")
@@ -62,6 +67,7 @@ summary(map_lm(dep = "support", indp = "causalties"))
 
 
 indep <- c("causalties", "actuall_area", "area_change","causalties*actuall_area",  "area_change*causalties", "total_material", "total_material*causalties",
+           "total_material*actuall_area","zero_log(causalties)", "actuall_area", "area_change","zero_log(causalties)*actuall_area",  "area_change*zero_log(causalties)", "total_material", "total_material*zero_log(causalties)",
            "total_material*actuall_area")
 
 support_models <- list()
