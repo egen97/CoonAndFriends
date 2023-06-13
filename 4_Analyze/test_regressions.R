@@ -36,7 +36,10 @@ model_data <- model_data %>%
   mutate(
     days_since_invasion = row_number(),
     area_change = actuall_area - lag(actuall_area),
-    total_material = rowSums(across(armored_veichle:uav))
+    total_material = rowSums(across(armored_veichle:uav)),
+    caus_10 = causalties/100,
+    supp_dum = ifelse(support == 3, 1, 0),
+    mentioned_dum = ifelse(mentioned)
     )
 
 
@@ -78,15 +81,101 @@ mentioned_models <- list()
 mentioned_models <- map2("mentioned", indep, st_formula_vector = "days_since_invasion", map_lm)
 
 
-multiplot(support_models) +
+multiplot(mentioned_models) +
   labs(title = "Support") +
   ggthemes::theme_excel_new()
 
 
-multiplot(mentioned_models) +
+multiplot(mentioned_models, newNames = c(
+  "causalties" = "Causalties",
+  "actuall_area" = "Area",
+  "total_material" = "Material Loss",
+  "area_change" = "Area: Change",
+  "zero_log(causalties)" = "Ln Causalties",
+  "days_since_invasion" = "Time since invasion",
+  "total_material:zero_log(causalties)" = "Ln Causalties, Material Loss",
+  "area_change:zero_log(causalties)" = "Ln Causalties, Area: Change",
+  "total_material:causalties" = "Causalties, Material Loss",
+  "actuall_area:zero_log(causalties)" = "Ln Causalties",
+  "zero_log(causalties):actuall_area" = "Ln Causalties, Area",
+  "causalties:actuall_area" = "Causalties, Area",
+  "total_material:actuall_area" = "Material Loss, Area",
+  "area_change:causalties" = "Causalties, Are: Change"
+  ),
+  intercept = FALSE
+) +
   labs(title = "Mentioned") +
   ggthemes::theme_excel_new()
 
-stargazer(support_models, type = "text")
+
+
+multiplot(support_models, newNames = c(
+  "causalties" = "Causalties",
+  "actuall_area" = "Area",
+  "total_material" = "Material Loss",
+  "area_change" = "Area: Change",
+  "zero_log(causalties)" = "Ln Causalties",
+  "days_since_invasion" = "Time since invasion",
+  "total_material:zero_log(causalties)" = "Ln Causalties, Material Loss",
+  "area_change:zero_log(causalties)" = "Ln Causalties, Area: Change",
+  "total_material:causalties" = "Causalties, Material Loss",
+  "actuall_area:zero_log(causalties)" = "Ln Causalties",
+  "zero_log(causalties):actuall_area" = "Ln Causalties, Area",
+  "causalties:actuall_area" = "Causalties, Area",
+  "total_material:actuall_area" = "Material Loss, Area",
+  "area_change:causalties" = "Causalties, Are: Change"
+),
+intercept = FALSE
+) +
+  labs(title = "Support") +
+  ggthemes::theme_excel_new()
+
+stargazer(
+  support_models,
+  type = "text",
+  covariate.labels = c(
+    "Causalties",
+    "Area",
+    "Area: Change",
+    "Material Loss",
+    "Ln Causalties",
+    "Time since invasion",
+    "Causalties, Area",
+    "Causalties, Area: Change",
+    "Causalties, Material Loss",
+    "Material Loss, Area",
+    "Ln Causalties, Area",
+    "Ln Causalties, Area: Change",
+    "Ln Causalties, Material Loss"
+    ),
+  dep.var.caption = "Support of Putin",
+  out = "4_Analyze/regressions/support_models_130623.tex"
+)
+
+
+
+stargazer(
+  mentioned_models,
+  type = "text",
+  covariate.labels = c(
+    "Causalties",
+    "Area",
+    "Area: Change",
+    "Material Loss",
+    "Ln Causalties",
+    "Time since invasion",
+    "Causalties, Area",
+    "Causalties, Area: Change",
+    "Causalties, Material Loss",
+    "Material Loss, Area",
+    "Ln Causalties, Area",
+    "Ln Causalties, Area: Change",
+    "Ln Causalties, Material Loss"
+  ),
+  dep.var.caption = "Mentioning Putin",
+  out = "4_Analyze/regressions/mentioned_models_130623.tex"
+)
+
+
 
 
