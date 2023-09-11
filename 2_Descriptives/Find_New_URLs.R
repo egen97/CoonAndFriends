@@ -1,7 +1,7 @@
 
 library(tidyverse)
 
-telegrams_cleaned <- readRDS("./Data/telegrams_cleaned.rds")
+telegrams_cleaned <- readRDS("./Data/Telegrams/telegrams_cleaned.rds")
 
 #### URLs that have been embedded in the post ####
 urls <- telegrams_cleaned %>%
@@ -31,7 +31,7 @@ forwarded_channels <- forwarded_channels %>%
 
 ### HOW TO GO FROM CHANNEL ID TO CHANNEL NAME? ###
 
-## 1. This work occasionally, most often not:
+## 1. This works occasionally, most often not:
 
 # How to look at a channel by the channel-id?
 # Type this into your browser: https://web.telegram.org/k/#

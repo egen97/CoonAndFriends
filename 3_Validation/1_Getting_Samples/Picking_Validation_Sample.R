@@ -3,7 +3,7 @@ library(tidyverse)
 library(stringr)
 library(httr)
 
-telegrams_cleaned <- readRDS("./Data/telegrams_cleaned.rds")
+set.seed(42)
 
 #### Create validation sample with the translated posts as well ####
 
@@ -15,38 +15,24 @@ telegrams_english <- map(telegrams_english, .f = list(. %>% dplyr::select(source
 
 telegrams_english <- do.call(rbind, telegrams_english)
 
-telegrams_joined <- telegrams_english %>%
-  left_join(telegrams_cleaned, join_by(source, date, id, message)) %>%
-  drop_na(rowid) %>%
-  mutate(message = ifelse(message == "", NA, message)) %>%
-  filter(str_detect(message, "(?i)путин[а-я]*|владимир\\s*владимирович\\s*путин|владимир\\s*путин")) %>%
-  drop_na(message)
+telegrams <- readRDS("./Data/Telegrams/telegrams_cleaned_wartime_pasted_putin.rds")
 
-test <- telegrams_joined %>% filter(date == "2022-05-05") %>%
-  dplyr::select(rowid, source, date, id, message, translatedText)
+telegrams_joined <- telegrams %>%
+  mutate(date = as.Date(date)) %>%
+  rename(ru_message = message) %>%
+  #filter(date %in% c(telegrams_english$date)) %>%
+  inner_join(telegrams_english %>% rename(en_message = message), join_by(source, date, id))
 
-#### How many times is "Putin" mentioned in the overall data? ####
+telegrams_joined_sample <- telegrams_joined %>%
+  mutate(year = substr(date, 1, 4),
+         month = substr(date, 6, 7),
+         year_month = paste0(year, "_", month)) %>%
+  filter(year_month != "2023_05") %>%
+  group_by(year_month) %>%
+  sample_n(10) %>%
+  ungroup()
 
-# https://cooljugator.com/run/%D0%BF%D1%83%D1%82%D0%B8%D0%BD
-
-post <- telegrams_cleaned %>%
-  mutate(message = ifelse(message == "", NA, message)) %>%
-  filter(str_detect(message, "(?i)путин[а-я]*|владимир\\s*владимирович\\s*путин|владимир\\s*путин")) %>%
-  drop_na(message) %>%
-  nrow()
-
-# 30618
-
-putina <- post %>%
-  filter(str_detect(message, "путина"))
-
-lateposts <- telegrams_cleaned %>%
-  mutate(message = ifelse(message == "", NA, message)) %>%
-  filter(str_detect(message, "(?i)путин[а-я]*|владимир\\s*владимирович\\s*путин|владимир\\s*путин")) %>%
-  drop_na(message) %>%
-  filter(date >= "01-01-2023") %>%
-  select(rowid, source, date, id, message)
-
+saveRDS(telegrams_joined_sample, "./Data/Validation_Samples/Validation_Run_2/subsample_run2.rds")
 
 ##### VALIDATION SAMPLE 10-30 posts #####
 
