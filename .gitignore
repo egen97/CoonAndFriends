@@ -36,8 +36,12 @@ Documentation/occupied_area_documentation_files/
 *.png
 *.ini
 *.session
+*.xlsx
+*.csv
+*.txt
 config
 env
 /Credentials
 /Data
+/Jonas_Coon_folder
 

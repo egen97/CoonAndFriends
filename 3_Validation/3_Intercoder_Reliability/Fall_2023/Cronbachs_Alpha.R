@@ -4,21 +4,21 @@ library(ltm)
 
 ### Read in human coding
 
-amalie <- openxlsx::read.xlsx("./Data/CrossCoding/Subsample_Amalie.xlsx") %>%
+amalie <- openxlsx::read.xlsx("./Data/Validation_Samples/Fall_2023/CrossCoding/Subsample_Amalie.xlsx") %>%
   dplyr::select(-message) %>%
   rename_all(str_to_lower) %>%
   mutate_all(as.numeric) %>%
   mutate(coder = "amalie") %>%
   dplyr::select(-source)
 
-eric <- openxlsx::read.xlsx("./Data/CrossCoding/Subsample_Eric.xlsx") %>%
+eric <- openxlsx::read.xlsx("./Data/Validation_Samples/Fall_2023/CrossCoding/Subsample_Eric.xlsx") %>%
   dplyr::select(-message) %>%
   rename_all(str_to_lower) %>%
   mutate_all(as.numeric) %>%
   mutate(coder = "eric") %>%
   dplyr::select(-source)
 
-jonas <- openxlsx::read.xlsx("./Data/CrossCoding/Subsample_Jonas.xlsx")  %>%
+jonas <- openxlsx::read.xlsx("./Data/Validation_Samples/Fall_2023/CrossCoding/Subsample_Jonas.xlsx")  %>%
   dplyr::select(-message) %>%
   rename_all(str_to_lower) %>%
   mutate_all(as.numeric) %>%
@@ -27,7 +27,7 @@ jonas <- openxlsx::read.xlsx("./Data/CrossCoding/Subsample_Jonas.xlsx")  %>%
 
 ### Read in ChatGPT coding. Generated from ChatGPT_LimitedSample.R
 
-chatgpt <- readRDS("./Data/completions.rds") %>%
+chatgpt <- readRDS("./Data/Validation_Samples/Fall_2023/completions.rds") %>%
   dplyr::select(rowid, War_mention, Putin_focus, Post_type, Sentiment, Support_for_Putin, Criticism_of_Putin, Trust_in_Putin, Competence_of_Putin,
                 State_of_war_for_Russia, Responsibility_for_the_war, Course_of_action_for_Russia) %>%
   rename_all(str_to_lower) %>%
@@ -163,7 +163,7 @@ mean_alpha_pairs <- cronbach_df %>%
   gather(war_mention, putin_focus, post_type, sentiment, support_for_putin, criticism_of_putin, trust_in_putin, competence_of_putin,
          state_of_war_for_russia, responsibility_for_the_war, course_of_action_for_russia,
          key = "Variable", value = "Alpha") %>%
-  group_by(`Coder combination`, Variable) %>%
+  group_by(`Coder combination`, Variable) %>% # name
   summarise(`Average Cronbach's Alpha` = mean(Alpha, na.rm = TRUE))
 
 knitr::kable(mean_alpha_pairs) %>%

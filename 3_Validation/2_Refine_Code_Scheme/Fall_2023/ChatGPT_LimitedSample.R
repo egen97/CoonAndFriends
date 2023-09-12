@@ -14,7 +14,7 @@ library(httr)
 
 set.seed(42)
 
-telegrams <- readRDS("./Data/subsample_run.rds")
+telegrams <- readRDS("./Data/Validation_Samples/Fall_2023/subsample_run.rds")
 
 create_prompt <- function(telegrams){
   prompts <- purrr::map2(telegrams$message, telegrams$rowid,
@@ -33,6 +33,18 @@ create_prompt <- function(telegrams){
                                "support for the Russian government), and generally endorse the ongoing war. ",
                                "Answer based on explicit clues in the post. Use N/A if the question is not applicable to the post.")
                            ),
+
+                           # list(
+                           #   "role" = "assistant",
+                           #   "content" = stringr::str_c(
+                           #
+                           #     "PostID 143565 \n\n
+                           #
+                           #     War_mention: 0 | (no) | The post talks about the progress of military personell in Ukraine. \n\n
+                           #
+                           #     Post_type: 1 | (news/factual description) | This post contains actual descriptions of the war against Ukraine. \n\n")
+                           #
+                           #   ),
 
                            list(
                              "role" = "user",
@@ -97,8 +109,28 @@ create_prompt <- function(telegrams){
 
 
 prompts <- create_prompt(telegrams)
+# prompts
 
 api_key <- read_lines("./Credentials/api_key_chatgpt")
+
+# submit_prompt <- function(prompt, temperature = 0.0, n = 1) {
+#   response <- POST(
+#     url = "https://api.openai.com/v1/chat/completions",
+#     add_headers(Authorization = paste("Bearer", api_key)),
+#     content_type_json(),
+#     encode = "json",
+#     body = list(
+#       model = "gpt-3.5-turbo",
+#       temperature = temperature,
+#       messages = prompt,
+#       n = n))
+#   Sys.sleep(10)
+#   message(paste0("Finished post."))
+#   str_trim(content(response)$choices[[1]]$message$content)
+# }
+#
+# openai_completions <- prompts %>%
+#   purrr::map(submit_prompt)
 
 openai_completions <- list()
 openai_prompt_tokens <- list()
@@ -109,7 +141,7 @@ for(i in 1:nrow(telegrams)){
 
   post_id <- telegrams$rowid[i]
 
-  destfile <- paste0("./Data/ChatGPT_output/completion_", post_id, ".txt")
+  destfile <- paste0("./Data/Validation_Samples/Fall_2023/ChatGPT_output/completion_", post_id, ".txt")
 
   if(!file.exists(destfile)){ # Do not download if file exists in folder already
 
@@ -139,8 +171,8 @@ for(i in 1:nrow(telegrams)){
                        completion_tokens = openai_completion_tokens[[i]],
                        total_tokens = openai_total_tokens[[i]])
 
-    write.table(completion, file = paste0("./Data/ChatGPT_output/completion_", post_id, ".txt"))
-    write_csv(tokenuse, file = paste0("./Data/ChatGPT_output/tokenuse_", post_id, ".csv"))
+    write.table(completion, file = paste0("./Data/Validation_Samples/Fall_2023/ChatGPT_output/completion_", post_id, ".txt"))
+    write_csv(tokenuse, file = paste0("./Data/Validation_Samples/Fall_2023/ChatGPT_output/tokenuse_", post_id, ".csv"))
 
   } else {
 
@@ -148,7 +180,7 @@ for(i in 1:nrow(telegrams)){
 
   }
 
-    if(file.size(paste0("./Data/ChatGPT_output/completion_", post_id, ".txt")) == 0L | is.na(paste0("./Data/ChatGPT_output/completion_", post_id, ".txt"))){
+    if(file.size(paste0("./Data/Validation_Samples/Fall_2023/ChatGPT_output/completion_", post_id, ".txt")) == 0L | is.na(paste0("./Data/Validation_Samples/Fall_2023/ChatGPT_output/completion_", post_id, ".txt"))){
 
       response <- POST(
         url = "https://api.openai.com/v1/chat/completions",
@@ -176,8 +208,8 @@ for(i in 1:nrow(telegrams)){
                          completion_tokens = openai_completion_tokens[[i]],
                          total_tokens = openai_total_tokens[[i]])
 
-      write.table(completion, file = paste0("./Data/ChatGPT_output/completion_", post_id, ".txt"))
-      write_csv(tokenuse, file = paste0("./Data/ChatGPT_output/tokenuse_", post_id, ".csv"))
+      write.table(completion, file = paste0("./Data/Validation_Samples/Fall_2023/ChatGPT_output/completion_", post_id, ".txt"))
+      write_csv(tokenuse, file = paste0("./Data/Validation_Samples/Fall_2023/ChatGPT_output/tokenuse_", post_id, ".csv"))
 
     } else {
 
@@ -187,10 +219,10 @@ for(i in 1:nrow(telegrams)){
 
 }
 
-completions <- lapply(list.files("./Data/ChatGPT_output/", full.names = TRUE, pattern = ".txt"), read.table) %>%
+completions <- lapply(list.files("./Data/Validation_Samples/Fall_2023/ChatGPT_output/", full.names = TRUE, pattern = ".txt"), read.table) %>%
   bind_rows()
 
-tokenuse <- lapply(list.files("./Data/ChatGPT_output/", full.names = TRUE, pattern = ".csv"), read.csv) %>%
+tokenuse <- lapply(list.files("./Data/Validation_Samples/Fall_2023/ChatGPT_output/", full.names = TRUE, pattern = ".csv"), read.csv) %>%
   bind_rows()
 
 (sum(tokenuse$prompt_tokens)/1000)*0.0015 + (sum(tokenuse$completion_tokens)/1000)*0.002
@@ -263,5 +295,5 @@ completions_df <- as_tibble(completions, .name_repair = "universal") %>%
                 Responsibility_for_the_war, Responsibility_for_the_war_category, Responsibility_for_the_war_justification,
                 Course_of_action_for_Russia, Course_of_action_for_Russia_category, Course_of_action_for_Russia_justification)
 
-saveRDS(completions_df, file = "./Data/completions.rds")
-saveRDS(tokenuse, file = "./Data/tokenuse.rds")
+saveRDS(completions_df, file = "./Data/Validation_Samples/Fall_2023/completions.rds")
+saveRDS(tokenuse, file = "./Data/Validation_Samples/Fall_2023/tokenuse.rds")

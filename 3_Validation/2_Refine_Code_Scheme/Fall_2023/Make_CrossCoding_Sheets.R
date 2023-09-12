@@ -3,7 +3,7 @@ library(tidyverse)
 
 ##### VALIDATION SAMPLE SUBDIVIDED #####
 
-telegrams_joined_sample <- readRDS("./Data/subsample_run.rds")
+telegrams_joined_sample <- readRDS("./Data/Validation_Samples/Fall_2023/subsample_run.rds")
 
 amalie <- bind_rows(telegrams_joined_sample[1:25,], telegrams_joined_sample[76:96,])
 eric <- bind_rows(telegrams_joined_sample[26:50,], telegrams_joined_sample[76:96,])
@@ -53,6 +53,6 @@ jonas <- jonas %>%
          Responsibility_for_the_war = "",
          Course_of_action_for_Russia = "")
 
-write_excel_csv(amalie, "./Data/CrossCoding/Subsample_Amalie.csv")
-write_excel_csv(eric, "./Data/CrossCoding/Subsample_Eric.csv")
-write_excel_csv(jonas, "./Data/CrossCoding/Subsample_Jonas.csv")
+write_excel_csv(amalie, "./Data/Validation_Samples/Fall_2023/CrossCoding/Subsample_Amalie.csv")
+write_excel_csv(eric, "./Data/Validation_Samples/Fall_2023/CrossCoding/Subsample_Eric.csv")
+write_excel_csv(jonas, "./Data/Validation_Samples/Fall_2023/CrossCoding/Subsample_Jonas.csv")
