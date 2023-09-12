@@ -5,37 +5,29 @@ library(tidyverse)
 library(stringr)
 library(httr)
 
-telegrams_cleaned <- readRDS("./Data/telegrams_cleaned.rds")
+# Remembering history? Comes with a lot of extra tokens, does not seem worth it.
+# https://blog.devgenius.io/how-to-maintain-conversation-flow-in-with-chatgpts-api-in-r-part-17-of-r-for-applied-d010cca1326a
 
-telegrams <- telegrams_cleaned %>%
-  drop_na(rowid) %>%
-  mutate(message = ifelse(message == "", NA, message)) %>%
-  filter(str_detect(message, "(?i)путин[а-я]*|владимир\\s*владимирович\\s*путин|владимир\\s*путин")) %>%
-  drop_na(message)
+# Use assistant function to train some answers? Would also require a lot of more tokens.
+# https://www.programmingelectronics.com/chatgpt-api/
+
 
 set.seed(42)
 
-# telegrams_month <- telegrams %>%
-#   filter(date >= "2022-01-01") %>%
-#   mutate(year = substr(date, 1, 4),
-#          month = substr(date, 6, 7),
-#          year_month = paste0(year, "_", month)) %>%
-#   filter(year_month != "2023_05") %>%
-#   group_by(year_month) %>%
-#   sample_n(150) %>%
-#   ungroup()
-#
-# saveRDS(telegrams_month, file = "../data/telegrams_month.rds")
+telegrams <- readRDS("./Data/Telegrams/telegrams_cleaned_wartime_pasted_putin.rds")
 
-telegrams_month <- readRDS("../data/telegrams_month.rds")
+telegrams_sample_month <- telegrams %>%
+  mutate(year = substr(date, 1, 4),
+         month = substr(date, 6, 7),
+         year_month = paste0(year, "_", month)) %>%
+  filter(year_month != "2023_05") %>%
+  group_by(year_month) %>%
+  sample_n(10) %>%
+  ungroup()
 
-# leftouts <- as.character(telegrams_month$rowid)[!as.character(telegrams_month$rowid) %in% c(str_squish(completions_df$rowid), str_squish(completions_df$rowid))]
-#
-# telegrams_month2 <- telegrams_month %>%
-#   filter(rowid %in% as.numeric(leftouts))
 
-create_prompt <- function(telegrams_month){
-  prompts <- purrr::map2(telegrams_month$message, telegrams_month$rowid,
+create_prompt <- function(telegrams_sample_month){
+  prompts <- purrr::map2(telegrams_sample_month$message, telegrams_sample_month$rowid,
 
                          ~list(
 
@@ -69,7 +61,7 @@ create_prompt <- function(telegrams_month){
 
                                "Support: Is the post supportive or opposed to Putin specifically? Pick one of the following categories: 1 (opposed), 2 (neither opposed nor supportive), 3 (supportive). ",
 
-                               "Sentiment: Is the post positive or negative towards Putin specifically? Pick one of the following categories: 1 (negative), 2 (neutral), 3 (positive). ",
+                               "Sentiment: What is the general tone of the post? Pick one of the following categories: 1 (negative), 2 (neutral), 3 (positive). ",
 
                                ## TRUST ##
 
@@ -81,7 +73,7 @@ create_prompt <- function(telegrams_month){
 
                                "State_of_war: How does the post describe the current state of the war for Russia? Pick one of the following categories: 1 (bad), 2 (neutral), 3 (good), 0 (no description of the war). ",
 
-                               "Responsibility: Does the post explicitly assign responsibility for how the war is going to Putin specifically? Pick one of the following categories: 1 (Putin is not responsible), 2 (Putin is somewhat responsible), 3 (Putin is fully responsible), 0 (Putin is not explicitly assigned responsibility).  ",
+                               "Responsibility: Does the post explicitly assign responsibility for how the war is going to Putin personally? Pick one of the following categories: 0 (Putin is not explicitly assigned responsibility), 1 (Putin is explicitly assigned responsibility).",
 
                                "Response: How does the post think Russia should continue the war? Pick one of the following categories: 1 (escalate the war), 2 (de-escalate the war), 0 (no statement). ",
 
@@ -114,8 +106,8 @@ create_prompt <- function(telegrams_month){
 }
 
 
-prompts <- create_prompt(telegrams_month)
-prompts
+prompts <- create_prompt(telegrams_sample_month)
+# prompts
 
 api_key <- read_lines("./Credentials/api_key_chatgpt")
 
@@ -143,12 +135,7 @@ openai_prompt_tokens <- list()
 openai_completion_tokens <- list()
 openai_total_tokens <- list()
 
-# completion <- "start"
-# i <- 1
-
-#while(!identical(completion, character(0)) & i < nrow(telegrams_month)){
-
-  for(i in 1:nrow(telegrams_month)){
+for(i in 1:3){ #nrow(telegrams_month)){
 
     response <- POST(
       url = "https://api.openai.com/v1/chat/completions",
@@ -170,10 +157,53 @@ openai_total_tokens <- list()
 
     Sys.sleep(5)
 
-    message(paste0("Finished post no. ", i))
+    completion <- tibble(completion = openai_completions[[i]])
+
+    tokenuse <- tibble(prompt_tokens = openai_prompt_tokens[[i]],
+                       completion_tokens = openai_completion_tokens[[i]],
+                       total_tokens = openai_total_tokens[[i]])
+
+    write.table(completion, file = paste0("./Data/ChatGPT_output/completion_", i, ".txt"))
+    write_csv(tokenuse, file = paste0("./Data/ChatGPT_output/tokenuse_", i, ".csv"))
+
+    if(file.size(paste0("./Data/ChatGPT_output/completion_", i, ".txt")) == 0L | is.na(paste0("./Data/ChatGPT_output/completion_", i, ".txt"))){
+
+      response <- POST(
+        url = "https://api.openai.com/v1/chat/completions",
+        add_headers(Authorization = paste("Bearer", api_key)),
+        content_type_json(),
+        encode = "json",
+        body = list(
+          model = "gpt-3.5-turbo",
+          temperature = 0.0,
+          messages = prompts[[i]],
+          n = 1))
+
+      completion <<- str_trim(content(response)$choices[[1]]$message$content)
+
+      openai_completions[[i]] <-  completion
+      openai_prompt_tokens[[i]] <- str_trim(content(response)$usage$prompt_tokens)
+      openai_completion_tokens[[i]] <- str_trim(content(response)$usage$completion_tokens)
+      openai_total_tokens[[i]] <- str_trim(content(response)$usage$total_tokens)
+
+      Sys.sleep(5)
+
+      completion <- tibble(completion = openai_completions[[i]])
+
+      tokenuse <- tibble(prompt_tokens = openai_prompt_tokens[[i]],
+                         completion_tokens = openai_completion_tokens[[i]],
+                         total_tokens = openai_total_tokens[[i]])
+
+      write.table(completion, file = paste0("./Data/ChatGPT_output/completion_", i, ".txt"))
+      write_csv(tokenuse, file = paste0("./Data/ChatGPT_output/tokenuse_", i, ".csv"))
+
+    } else {
+
+      message(paste0("Finished post no. ", i))
+
+    }
 
   }
-#}
 
 completions <- do.call(rbind, openai_completions)
 
@@ -249,3 +279,8 @@ completions_df_all <- as_tibble(completions, .name_repair = "universal") %>%
 saveRDS(completions_df_all, file = "./Data/completions_df_limited_sample_all.rds")
 #openxlsx::write.xlsx(completions_df_all, "./Data/completions_df.xlsx")
 saveRDS(tokenuse_all, file = "./Data/tokenuse_all.rds")
+
+coded_posts <- left_join(coded_posts %>% mutate(rowid = as.numeric(rowid)), telegrams_month,
+                         by = join_by(rowid))
+
+saveRDS(coded_posts, file = "./Data/EPSA data/coded_posts.rds")

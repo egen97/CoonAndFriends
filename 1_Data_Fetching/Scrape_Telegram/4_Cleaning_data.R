@@ -3,7 +3,7 @@ library(tidyverse)
 
 ### Read scraped channels into R ###
 
-files <- list.files("../../Data/Channels_RDS/", full.names = TRUE)
+files <- list.files("../Data/Channels_RDS/", full.names = TRUE)
 
 telegrams <- lapply(files, read_rds)
 
