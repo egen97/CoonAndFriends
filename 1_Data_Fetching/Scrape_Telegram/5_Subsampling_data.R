@@ -6,34 +6,35 @@ library(data.table)
 
 telegrams_cleaned_a <- readRDS("./Data/Telegrams/telegrams_cleaned.rds")
 
-nrow(telegrams_cleaned_a) # 841409
+nrow(telegrams_cleaned_a) # 2454540
 
 #### 1b. Removing Soloviev ####
 
-telegrams_cleaned_b <- telegrams_cleaned_a %>%
-  filter(source != "SolovievLive")
+# telegrams_cleaned_b <- telegrams_cleaned_a %>%
+#   filter(source != "SolovievLive")
+#
+# nrow(telegrams_cleaned_b) # 676014
 
-nrow(telegrams_cleaned_b) # 676014
 
 #### 2. Removing empty posts ####
-telegrams_cleaned2 <- telegrams_cleaned_b %>%
+telegrams_cleaned2 <- telegrams_cleaned_a %>%
   mutate(message = ifelse(message == "", NA, message)) %>%
   drop_na(message) %>%
   distinct(.keep_all = TRUE)
 
-#saveRDS(telegrams_cleaned2, file = "./Data/Telegrams/telegrams_cleaned2.rds")
+# saveRDS(telegrams_cleaned2, file = "./Data/Telegrams/telegrams_cleaned2.rds")
 
-nrow(telegrams_cleaned2) # 497780
+nrow(telegrams_cleaned2) # 1947691
 
 
 #### 3. Picking only the posts that occur in the wartime period ####
 telegrams_cleaned_wartime <- telegrams_cleaned2 %>%
   filter(date >= "2022-01-01") %>%
-  filter(date <= "2023-04-30")
+  filter(date <= "2023-10-31")
 
-#saveRDS(telegrams_cleaned_wartime, file = "./Data/Telegrams/telegrams_cleaned_wartime.rds")
+# saveRDS(telegrams_cleaned_wartime, file = "./Data/Telegrams/telegrams_cleaned_wartime.rds")
 
-nrow(telegrams_cleaned_wartime) # 353129
+nrow(telegrams_cleaned_wartime) # 1182268
 
 
 #### 4. Pasting messages ####
@@ -146,7 +147,7 @@ gc()
 
 saveRDS(telegrams_cleaned_wartime_pasted, file = "./Data/Telegrams/telegrams_cleaned_wartime_pasted.rds")
 
-nrow(telegrams_cleaned_wartime_pasted) # 339846
+nrow(telegrams_cleaned_wartime_pasted) # 1144182
 
 
 #### 5. Putin messages ####
@@ -158,15 +159,16 @@ telegrams_cleaned_wartime_pasted_putin <- telegrams_cleaned_wartime_pasted %>%
 
 saveRDS(telegrams_cleaned_wartime_pasted_putin, file = "./Data/Telegrams/telegrams_cleaned_wartime_pasted_putin.rds")
 
-nrow(telegrams_cleaned_wartime_pasted_putin) # 9369
+nrow(telegrams_cleaned_wartime_pasted_putin) # 39015
 
 #### Plotting row reduction ####
 
 options(scipen = 999)
 
-sample_reduction <- tibble(type = c("Original", "Removed Soloviev", "Removed missing", "Wartime posts", "Pasted", "Putin mentioned"),
-       number = c(nrow(telegrams_cleaned_a), nrow(telegrams_cleaned_b), nrow(telegrams_cleaned2), nrow(telegrams_cleaned_wartime), nrow(telegrams_cleaned_wartime_pasted), nrow(telegrams_cleaned_wartime_pasted_putin))) %>%
-  mutate(type = factor(type, levels = c("Original", "Removed Soloviev", "Removed missing", "Wartime posts", "Pasted", "Putin mentioned")))
+# "Removed Soloviev",
+sample_reduction <- tibble(type = c("Original", "Removed missing", "Wartime posts", "Pasted", "Putin mentioned"),
+       number = c(nrow(telegrams_cleaned_a), nrow(telegrams_cleaned2), nrow(telegrams_cleaned_wartime), nrow(telegrams_cleaned_wartime_pasted), nrow(telegrams_cleaned_wartime_pasted_putin))) %>%
+  mutate(type = factor(type, levels = c("Original", "Removed missing", "Wartime posts", "Pasted", "Putin mentioned")))
 
 sample_reduction %>%
   ggplot(aes(type, number)) +
@@ -191,5 +193,5 @@ telegrams_cleaned_wartime_pasted %>%
 
 # Time frame:
 ### 2022-01-01
-### 2023-04-30
+### 2023-10-31
 

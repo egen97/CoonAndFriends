@@ -9,21 +9,21 @@ library(jsonlite)
 
 #### Get information on dates and number of posts ####
 
-post <- fromJSON("./Scraped_channels/anna_news.json", flatten = TRUE) %>%
+post <- fromJSON("./1_Data_Fetching/Scrape_Telegram/jsons/anna_news.json", flatten = TRUE) %>%
   mutate(date = as.Date(date))
 
 post$date %>% min()
 post$date %>% max()
 
-post %>% 
-  mutate(message = ifelse(message == "", NA, message)) %>% 
-  drop_na(message) %>% 
+post %>%
+  mutate(message = ifelse(message == "", NA, message)) %>%
+  drop_na(message) %>%
   nrow()
 
 
 # fromJSON("./wehearfromyanina.json", flatten = TRUE) %>%
 #  mutate(source = name) %>%
-#   mutate(date = as.Date(date)) %>%  
+#   mutate(date = as.Date(date)) %>%
 #   filter(date >= "2022-01-01")
 
 ############

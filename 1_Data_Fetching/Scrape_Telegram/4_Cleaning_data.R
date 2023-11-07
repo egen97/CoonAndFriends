@@ -1,9 +1,8 @@
-
 library(tidyverse)
 
 ### Read scraped channels into R ###
 
-files <- list.files("../Data/Channels_RDS/", full.names = TRUE)
+files <- list.files("./Data/Channels_RDS/", full.names = TRUE)
 
 telegrams <- lapply(files, read_rds)
 
@@ -83,11 +82,13 @@ for (i in 1:length(telegrams)) {
 
     }
 
-    reactions <- do.call(rbind, reactionlist) # Make the list into a dataframe
+    reactions <- bind_rows(reactionlist) %>% # Make the list into a dataframe
+      filter(is.na(reaction)) %>%
+      select(-reaction, -`reaction._`, -chosen_order)
 
     reactions_nest <- reactions %>%
       group_by(id) %>%
-      nest(reaction = c(reaction, count, chosen)) # And nest the reactions to each message id
+      nest(reaction = c(reaction.emoticon, count, chosen)) # And nest the reactions to each message id
 
     tmp_join1 <- left_join(tmp1, reactions_nest, by = "id") # Left join with the main dataset
 
@@ -162,10 +163,11 @@ for (i in 1:length(telegrams)) {
 }
 
 
-telegrams_cleaned <- do.call(rbind, telegram_list)
+telegrams_cleaned <- bind_rows(telegram_list)
 
 telegrams_cleaned <- telegrams_cleaned %>%
-  rowid_to_column()
+  rowid_to_column() %>%
+  mutate(source = str_remove_all(source, ".rds"))
 
-saveRDS(telegrams_cleaned, file = "../../Data/telegrams_cleaned.rds")
+saveRDS(telegrams_cleaned, file = "./Data/telegrams_cleaned.rds")
 

@@ -1,5 +1,4 @@
 
-
 # Run this in PowerShell first to activate virtual environment: env/Scripts/Activate.ps1
 # python -m venv env
 
@@ -103,7 +102,7 @@ async def main(phone):
         if total_count_limit != 0 and total_messages >= total_count_limit:
             break
 
-    with open('bolshiepushki.json', 'w') as outfile:
+    with open('./jsons/unsure/.json', 'w') as outfile:
         json.dump(all_messages, outfile, default=str) #cls=DateTimeEncoder)
 
 with client:
