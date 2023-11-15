@@ -1,6 +1,6 @@
 #### PRE AMBLE ####
 
-pacman::p_load(gsheet, tidyverse, janitor, ThemePark, ggrepel)
+pacman::p_load(gsheet, tidyverse, janitor, ThemePark, ggrepel, ggthemes)
 
 #Define functions:
  #Several empty collums, used for visual help in the google sheet
@@ -88,8 +88,8 @@ orynx_data %>%
   geom_smooth(method = "loess", colour = oppenheimer_theme_colors["coolflame"]) +
   geom_label_repel(aes(label = label, x = date)) +
   geom_vline(aes(xintercept = of_change), colour = oppenheimer_theme_colors["flame"]) +
-  theme_oppenheimer() +
-  labs(y = "Russia/Ukraine Losses", x = "") +
+  theme_excel_new() +
+  labs(y = "Russia/Ukraine Losses", x = "", title = "Russo-Ukrainian Loss Ratio") +
   ylim(1,4.5)
 
 
@@ -104,10 +104,11 @@ orynx_data %>%
   geom_line(aes(colour = country), linewidth = 1) +
   geom_label(aes(label = label, x = date)) +
   geom_vline(aes(xintercept = of_change)) +
-  theme_barbie() +
+  theme_excel_new() +
   labs(x = "", y = "Cummulative Losses") +
   scale_y_continuous(labels = scales::label_comma())
 
+max(orynx_data$date)
 
 
 

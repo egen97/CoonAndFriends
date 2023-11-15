@@ -44,4 +44,10 @@ env
 /Credentials
 /Data
 /Jonas_Coon_folder
-
+text.aux
+text.bbl
+text.blg
+text.log
+text.pdf
+text.tex
+text.synctex.gz
