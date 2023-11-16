@@ -299,7 +299,11 @@ completions_all <- completions_all %>%
   select(-postid) %>%
   left_join(telegrams1 %>% bind_rows(telegrams2), by = join_by(rowid))
 
-saveRDS(completions_all, file = "./Data/Coded_posts_13_11_2023.rds")
+# saveRDS(completions_all, file = "./Data/Coded_posts_13_11_2023.rds")
+
+completions_all %>%
+  group_by(Post_type) %>%
+  count()
 
 #### PLOTS ####
 
@@ -318,7 +322,7 @@ support_p <- plotposts %>%
   group_by(year_month) %>%
   summarise(Support = mean(support, na.rm = TRUE)) %>%
   ggplot(aes(year_month, Support, group = 1)) +
-  ylim(0,3) +
+  ylim(1,3) +
   geom_line(linewidth = 1) +
   labs(x = "") +
   theme_minimal() +
@@ -330,7 +334,7 @@ sentiment_p <- plotposts %>%
   group_by(year_month) %>%
   summarise(Sentiment = mean(sentiment, na.rm = TRUE)) %>%
   ggplot(aes(year_month, Sentiment, group = 1)) +
-  ylim(0,3) +
+  ylim(1,3) +
   labs(x = "") +
   geom_line(linewidth = 1) +
   theme_minimal() +
@@ -342,7 +346,7 @@ critique_p <- plotposts %>%
   group_by(year_month) %>%
   summarise(Critique = mean(critique, na.rm = TRUE)) %>%
   ggplot(aes(year_month, Critique, group = 1)) +
-  ylim(0,3) +
+  ylim(1,3) +
   labs(x = "") +
   geom_line(linewidth = 1) +
   theme_minimal() +
@@ -354,7 +358,7 @@ trust_p <- plotposts %>%
   group_by(year_month) %>%
   summarise(Trust = mean(trust, na.rm = TRUE)) %>%
   ggplot(aes(year_month, Trust, group = 1)) +
-  ylim(0,3) +
+  ylim(1,3) +
   labs(x = "") +
   geom_line(linewidth = 1) +
   theme_minimal() +
@@ -366,13 +370,14 @@ competence_p <- plotposts %>%
   group_by(year_month) %>%
   summarise(Competence = mean(competence, na.rm = TRUE)) %>%
   ggplot(aes(year_month, Competence, group = 1)) +
-  ylim(0,3) +
+  ylim(1,3) +
   geom_line(linewidth = 1) +
   labs(x = "") +
   theme_minimal() +
   theme(legend.position = "bottom")
 
-cowplot::plot_grid(support_p, sentiment_p, critique_p, competence_p, trust_p,
-                   labels = c("Support", "Sentiment", "Criticism",
-                              "Competence", "Trust"))
+codeplots <- cowplot::plot_grid(support_p, sentiment_p, competence_p, trust_p, # critique_p
+                                labels = c("Support", "Sentiment", #"Criticism",
+                                           "Competence", "Trust"), ncol = 2)
 
+ggsave(codeplots, file = "./Figures/Coded_plots.pdf", width = 18, height = 10, dpi = 150)

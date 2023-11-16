@@ -12,10 +12,10 @@ cleaned_2 <- read_rds("./Data/Telegrams/telegrams_cleaned_wartime_pasted_putin.r
 putin_mentioned <- cleaned_1 %>%
   mutate(putin = ifelse(rowid %in% cleaned_2$rowid, 1, 0))
 
-tokens <- telegrams_cleaned %>%
-  unnest_tokens(input = message,
-                output = token,
-                token = "words")
+# tokens <- telegrams_cleaned %>%
+#   unnest_tokens(input = message,
+#                 output = token,
+#                 token = "words")
 
 #### Reactions and Putin-mentioning correlation #####
 
@@ -79,6 +79,14 @@ reaction_filter <- top_reactions %>%
 reaction_filter <- reaction_filter %>%
   left_join(putin_mentioned %>% select(id, source, views), by = join_by(id, source)) %>%
   unnest()
+
+# reactions_data <- reaction_filter %>%
+#   full_join(putin_mentioned %>%
+#               mutate(date = as.Date(date, format = "%Y-%m-%d")) %>%
+#               select(-reaction, -putin),
+#             by = join_by(date, id, source))
+#
+# saveRDS(reactions_data, file = "./Data/Validation_Samples/Winter_2023/Reactions_data_16_11_23.rds")
 
 colnames(reaction_filter) <- c("date", "month", "id", "source", "putin",
                                "whiteheart", "heartfire", "celebrate", "thumb_up", "thumb_down", "clap", "poop", "fire",
@@ -167,7 +175,7 @@ mods <- lapply(models, broom::tidy, conf.int = TRUE)
 mods <- map2(mods, model_names, ~mutate(.x, Model = .y)) %>%
   bind_rows()
 
-mods %>%
+p1 <- mods %>%
   filter(!str_detect(term, "views")) %>%
   mutate(term = ifelse(str_detect(term, "putin1"), "Putin", term)) %>%
   ggplot(aes(x = estimate, y = Model)) +
@@ -184,6 +192,7 @@ mods %>%
   theme(legend.position = "none")
 
 
+ggsave(p1, file = "./Figures/Reactions_Coefplot.pdf", width = 12, height = 10, dpi = 150)
 
 
 #### BIVARIATE CORRELATION ####

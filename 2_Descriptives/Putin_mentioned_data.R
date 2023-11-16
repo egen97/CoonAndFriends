@@ -27,9 +27,9 @@ p1 <- putin_mentioned %>%
   theme(legend.position = "bottom",
         text = element_text(size = 20))
 
-ggsave(p1, file = "./Figures/Mentioning_Putin_1.pdf", width = 12, height = 10, dpi = 150)
+# ggsave(p1, file = "./Figures/Mentioning_Putin_1.pdf", width = 12, height = 10, dpi = 150)
 
-p2 <- putin_mentioned %>%
+share_mentioning_putin <- putin_mentioned %>%
   mutate(date = as.Date(date, format = "%Y-%m-%d")) %>%
   filter(date >= "2022-01-01") %>%
   filter(date <= "2023-10-31") %>%
@@ -49,10 +49,10 @@ p2 <- putin_mentioned %>%
   scale_color_manual(values = c("steelblue", "steelblue")) +
   labs(x = "", y = "") +
   theme_bw() +
-  theme(legend.position = "bottom",
+  theme(legend.position = "none",
         text = element_text(size = 20))
 
-ggsave(p1, file = "./Figures/Mentioning_Putin_2.pdf", width = 12, height = 10, dpi = 150)
+ggsave(share_mentioning_putin, file = "./Figures/Mentioning_Putin_Share.pdf", width = 12, height = 10, dpi = 150)
 
 cowplot::plot_grid(p1, p2,
                    labels = c("A", "B"))
