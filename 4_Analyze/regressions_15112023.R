@@ -21,14 +21,38 @@ map_lm <- function( ...){
   return(x)
 }
 
-indep <- c("ratio_ru_ua", "actuall_area", "area_change","ratio_ru_ua*actuall_area",  "area_change*ratio_ru_ua", "total_material", "total_material*ratio_ru_ua",
-           "total_material*actuall_area","zero_log(causalties)", "actuall_area", "area_change","zero_log(causalties)*actuall_area",  "area_change*zero_log(causalties)", "total_material", "total_material*zero_log(causalties)",
-           "total_material*actuall_area")
+
+#### Wrangle Tangle Dangle ####
+
+indep <- c("ratio_ru_ua", "actuall_area", "area_change","ratio_ru_ua*actuall_area",  "area_change*ratio_ru_ua", "russia_total", "russia_total*ratio_ru_ua",
+           "russia_total*actuall_area", "actuall_area", "area_change", "total_material","total_material*actuall_area")
 
 
 orynx <- readRDS("Data/orynx/2023-09-07.rds")
-losses <- readRDS("Data/russian_losses.rds")
 
 posts <- readRDS("Data/Coded_posts_13_11_2023.rds")
 
-posts$date <- as.Date(posts$date)
+occupied_area <- readRDS("Data/occupied_area.rds")
+
+
+posts <- posts %>%
+  mutate(date = as.Date(date))
+
+
+
+modData <- posts %>%
+  full_join(orynx, by = "date") %>%
+  full_join(occupied_area, by = "date")
+
+modData <- modData %>%
+  ungroup() %>%
+  arrange(date) %>%
+  fill(starts_with("russ"), .direction = "down")
+
+
+
+modData <- modData %>%
+  mutate(area_change = actuall_area-lag(actuall_area))
+
+
+#### Models ####
