@@ -1,4 +1,5 @@
 #### PRE AMBLE ####
+
 pacman::p_load(tidyverse, coefplot)
 
 zero_log <- function(x){
@@ -20,54 +21,6 @@ map_lm <- function( ...){
   )
   return(x)
 }
-
-
-#### Wrangle Tangle Dangle ####
-
-indep <- c("ratio_ru_ua", "actuall_area", "area_change" , "russia_total", "log(russia_total+1)", "causalties", "log(causalties+1)",  "causalties*actuall_area")
-
-
-orynx <- readRDS("Data/orynx/2023-09-07.rds")
-
-posts <- readRDS("Data/Coded_posts_13_11_2023.rds")
-losses <- readRDS("Data/russian_losses.rds")
-occupied_area <- readRDS("Data/occupied_area.rds")
-
-losses <- losses %>%
-  select(date, causalties)
-
-posts <- posts %>%
-  mutate(date = as.Date(date))
-
-
-
-modData <- posts %>%
-  full_join(orynx, by = "date") %>%
-  full_join(occupied_area, by = "date") %>%
-  full_join(losses, by = "date")
-
-modData <- modData %>%
-  ungroup() %>%
-  arrange(date) %>%
-  fill(starts_with("russ"), .direction = "down")
-
-
-
-modData <- modData %>%
-  mutate(area_change = actuall_area-lag(actuall_area))
-
-modData <- modData %>%
-  mutate(days_since_invasion = date-as.Date("2022-02-24"))
-
-modData <- modData %>%
-  mutate(caus_1000 = causalties/1000)
-
-modData <- modData %>%
-  mutate(weeks_since_invasion = days_since_invasion/7)
-
-modData <- modData %>%
-  mutate(months_since_invasion = weeks_since_invasion/4)
-
 
 #### Models ####
 
