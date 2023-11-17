@@ -1,6 +1,6 @@
 #### PRE AMBLE ####
 
-pacman::p_load(tidyverse, coefplot)
+pacman::p_load(tidyverse, coefplot, ThemePark)
 
 mentioned <- readRDS("Data/mentioned_17112023.rds")
 mod_data <- readRDS("Data/mod_data_17112023.rds")
@@ -196,6 +196,35 @@ multiplot(tu_models[9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
 
 
 #### Some quick descriptions ####
+
+
+
+
+
+
+
+mod_data %>%
+  drop_na() %>%
+  ggplot(aes(Support_for_Putin)) +
+  geom_density(linewidth = 1) +
+  theme_barbie() +
+  labs(x = "", y = "", title = "Support for Putin")
+
+
+mod_data %>%
+  drop_na() %>%
+  ggplot(aes(Competence_of_Putin)) +
+  geom_bar(fill = barbie_theme_colors["medium"]) +
+  theme_barbie() +
+  labs(x = "", y = "", title = "Competence of Putin")
+
+
+mod_data %>%
+  drop_na() %>%
+  ggplot(aes(Sentiment)) +
+  geom_bar(fill = barbie_theme_colors["medium"]) +
+  theme_barbie() +
+  labs(x = "", y = "", title = "Sentiment")
 
 
 
