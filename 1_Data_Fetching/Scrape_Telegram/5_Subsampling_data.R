@@ -112,8 +112,8 @@ df3 <- df2 %>%
   filter(count %in% evens(count)) %>%
   group_by(count) %>%
   mutate(postno = row_number()) %>%
-  mutate(message = paste0("Post number ", postno, ": ", message)) %>%
-  mutate(message2 = paste(message, collapse = " \n\n ")) %>%
+  mutate(message = paste0("_", message)) %>%
+  mutate(message2 = paste(message, collapse = " \n\n ")) %>% # posts, when they are pasted together, are now simply pasted using lineshift.
   ungroup()
 
 df3 %>%
@@ -170,11 +170,17 @@ sample_reduction <- tibble(type = c("Original", "Removed missing", "Wartime post
        number = c(nrow(telegrams_cleaned_a), nrow(telegrams_cleaned2), nrow(telegrams_cleaned_wartime), nrow(telegrams_cleaned_wartime_pasted), nrow(telegrams_cleaned_wartime_pasted_putin))) %>%
   mutate(type = factor(type, levels = c("Original", "Removed missing", "Wartime posts", "Pasted", "Putin mentioned")))
 
-sample_reduction %>%
+sample_reduction_plot <- sample_reduction %>%
   ggplot(aes(type, number)) +
   geom_bar(stat = "identity") +
   labs(x = "", y = "Number of posts") +
   theme_classic()
+
+ggsave(sample_reduction_plot, file = "./Figures/sample_reduction_plot.pdf", width = 8, height = 8)
+
+sample_reduction %>%
+  knitr::kable("latex") %>%
+  kableExtra::kable_styling()
 
 #### Stats ####
 

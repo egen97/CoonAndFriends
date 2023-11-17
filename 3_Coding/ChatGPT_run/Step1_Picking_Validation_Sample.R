@@ -36,8 +36,12 @@ set.seed(42)
 #### Create validation sample without translated posts ####
 
 telegrams <- readRDS("./Data/Telegrams/telegrams_cleaned_wartime_pasted_putin.rds")
+completions_df_1 <- readRDS("./Data/Validation_Samples/Winter_2023/completions_df_1.rds")
 
-telegrams_joined_sample <- telegrams %>%
+telegrams2 <- telegrams %>%
+  filter(!rowid %in% completions_df_1$rowid)
+
+telegrams_joined_sample2 <- telegrams2 %>%
   mutate(nchar = nchar(message)) %>%
   #filter(nchar <= 2000) %>%
   # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
@@ -47,9 +51,9 @@ telegrams_joined_sample <- telegrams %>%
          year_month = paste0(year, "_", month)) %>%
   filter(year_month != "2023_11") %>%
   group_by(year_month) %>%
-  sample_n(50) %>%
+  sample_n(400) %>%
   ungroup() %>%
   select(rowid, source, id, date, message)
 
-saveRDS(telegrams_joined_sample, "./Data/subsample_run.rds")
+saveRDS(telegrams_joined_sample2, "./Data/Validation_Samples/Winter_2023/Subsample_Fall2023_2.rds")
 

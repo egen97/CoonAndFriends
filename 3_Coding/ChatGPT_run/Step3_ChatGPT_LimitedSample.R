@@ -11,10 +11,10 @@ library(httr)
 # Use assistant function to train some answers? Would also require a lot of more tokens.
 # https://www.programmingelectronics.com/chatgpt-api/
 
-
 set.seed(42)
 
-telegrams <- readRDS("./Data/Validation_Samples/Fall_2023/subsample_run.rds")
+telegrams <- readRDS("./Data/Validation_Samples/Winter_2023/Subsample_Fall2023_2.rds") %>%
+  mutate(message = str_remove(message, "_"))
 
 create_prompt <- function(telegrams){
   prompts <- purrr::map2(telegrams$message, telegrams$rowid,
@@ -88,17 +88,17 @@ create_prompt <- function(telegrams){
 
                                ## TEMPLATE ##
 
-                               "Use this template to answer the questions and justify your answers. Please follow the template exactly. ",
+                               "Use this template to answer the questions. Follow the template exactly. ",
 
                                "Include PostID number and separate answers using punctuation and line shifts (\n\n) in the template: ",
 
                                "PostID ", .y, " \n\n ",
 
-                               "Variable: number | (category) | justification \n\n ",
+                               "Variable: number | (category) | \n\n ",
 
                                "For example: ",
 
-                               "War_mention: 0 | (no) | The post does not mention the war in Ukraine. \n\n")
+                               "War_mention: 0 | (no) | \n\n")
 
 
                            )
@@ -143,20 +143,24 @@ for(i in 1:nrow(telegrams)){
 
   post_id <- telegrams$rowid[i]
 
-  destfile <- paste0("./Data/Validation_Samples/Fall_2023/", output_folder, "/completion_", post_id, ".txt")
+  destfile <- paste0("./Data/Validation_Samples/Winter_2023/", output_folder, "/completion_", post_id, ".txt")
 
   if(!file.exists(destfile)){ # Do not download if file exists in folder already
 
-    response <- POST(
-      url = "https://api.openai.com/v1/chat/completions",
-      add_headers(Authorization = paste("Bearer", api_key)),
-      content_type_json(),
-      encode = "json",
-      body = list(
-        model = "gpt-3.5-turbo",
-        temperature = 0.0,
-        messages = prompts[[i]],
-        n = 1))
+      response <- RETRY(
+        "POST",
+        times = 3,
+        url = "https://api.openai.com/v1/chat/completions",
+        add_headers(Authorization = paste("Bearer", api_key)),
+        content_type_json(),
+        encode = "json",
+        #timeout(10),
+        body = list(
+          model = "gpt-3.5-turbo",
+          temperature = 0.0,
+          messages = prompts[[i]],
+          n = 1)
+      )
 
     completion <<- str_trim(content(response)$choices[[1]]$message$content)
 
@@ -165,7 +169,7 @@ for(i in 1:nrow(telegrams)){
     openai_completion_tokens[[i]] <- str_trim(content(response)$usage$completion_tokens)
     openai_total_tokens[[i]] <- str_trim(content(response)$usage$total_tokens)
 
-    Sys.sleep(5)
+    Sys.sleep(1.5)
 
     completion <- tibble(completion = openai_completions[[i]])
 
@@ -173,8 +177,10 @@ for(i in 1:nrow(telegrams)){
                        completion_tokens = openai_completion_tokens[[i]],
                        total_tokens = openai_total_tokens[[i]])
 
-    write.table(completion, file = paste0("./Data/Validation_Samples/Fall_2023/", output_folder, "/completion_", post_id, ".txt"))
-    write_csv(tokenuse, file = paste0("./Data/Validation_Samples/Fall_2023/", output_folder, "/tokenuse_", post_id, ".csv"))
+    write.table(completion, file = paste0("./Data/Validation_Samples/Winter_2023/", output_folder, "/completion_", post_id, ".txt"))
+    write_csv(tokenuse, file = paste0("./Data/Validation_Samples/Winter_2023/", output_folder, "/tokenuse_", post_id, ".csv"))
+
+    gc()
 
   } else {
 
@@ -182,18 +188,23 @@ for(i in 1:nrow(telegrams)){
 
   }
 
-    if(file.size(paste0("./Data/Validation_Samples/Fall_2023/", output_folder, "/completion_", post_id, ".txt")) == 0L | is.na(paste0("./Data/Validation_Samples/Fall_2023/", output_folder, "/completion_", post_id, ".txt"))){
+    if(file.size(paste0("./Data/Validation_Samples/Winter_2023/", output_folder, "/completion_", post_id, ".txt")) < 15L | is.na(paste0("./Data/Validation_Samples/Winter_2023/", output_folder, "/completion_", post_id, ".txt"))){
 
-      response <- POST(
-        url = "https://api.openai.com/v1/chat/completions",
-        add_headers(Authorization = paste("Bearer", api_key)),
-        content_type_json(),
-        encode = "json",
-        body = list(
-          model = "gpt-3.5-turbo",
-          temperature = 0.0,
-          messages = prompts[[i]],
-          n = 1))
+      response <- RETRY(
+        "POST",
+        times = 3,
+          url = "https://api.openai.com/v1/chat/completions",
+          add_headers(Authorization = paste("Bearer", api_key)),
+          content_type_json(),
+          #progress(),
+          encode = "json",
+          #timeout(10),
+          body = list(
+            model = "gpt-3.5-turbo",
+            temperature = 0.0,
+            messages = prompts[[i]],
+            n = 1)
+        )
 
       completion <<- str_trim(content(response)$choices[[1]]$message$content)
 
@@ -202,7 +213,7 @@ for(i in 1:nrow(telegrams)){
       openai_completion_tokens[[i]] <- str_trim(content(response)$usage$completion_tokens)
       openai_total_tokens[[i]] <- str_trim(content(response)$usage$total_tokens)
 
-      Sys.sleep(5)
+      Sys.sleep(1.5)
 
       completion <- tibble(completion = openai_completions[[i]])
 
@@ -210,8 +221,10 @@ for(i in 1:nrow(telegrams)){
                          completion_tokens = openai_completion_tokens[[i]],
                          total_tokens = openai_total_tokens[[i]])
 
-      write.table(completion, file = paste0("./Data/Validation_Samples/Fall_2023/", output_folder, "/completion_", post_id, ".txt"))
-      write_csv(tokenuse, file = paste0("./Data/Validation_Samples/Fall_2023/", output_folder, "/tokenuse_", post_id, ".csv"))
+      write.table(completion, file = paste0("./Data/Validation_Samples/Winter_2023/", output_folder, "/completion_", post_id, ".txt"))
+      write_csv(tokenuse, file = paste0("./Data/Validation_Samples/Winter_2023/", output_folder, "/tokenuse_", post_id, ".csv"))
+
+      gc()
 
     } else {
 
@@ -220,83 +233,151 @@ for(i in 1:nrow(telegrams)){
     }
 
 }
+# output_folder <- "ChatGPT_output_2"
 
-completions <- lapply(list.files(paste0("./Data/Validation_Samples/Fall_2023/", output_folder), full.names = TRUE, pattern = ".txt"), read.table) %>%
+completions <- lapply(list.files(paste0("./Data/Validation_Samples/Winter_2023/", output_folder), full.names = TRUE, pattern = ".txt"), read.table) %>%
   bind_rows()
 
-tokenuse <- lapply(list.files(paste0("./Data/Validation_Samples/Fall_2023/", output_folder), full.names = TRUE, pattern = ".csv"), read.csv) %>%
+tokenuse <- lapply(list.files(paste0("./Data/Validation_Samples/Winter_2023/", output_folder), full.names = TRUE, pattern = ".csv"), read.csv) %>%
   bind_rows()
 
-(sum(tokenuse$prompt_tokens)/1000)*0.0015 + (sum(tokenuse$completion_tokens)/1000)*0.002
-# 0.2087965 dollar $$ spent
-
+postids <- str_remove(str_extract(list.files(paste0("./Data/Validation_Samples/Winter_2023/", output_folder), full.names = TRUE, pattern = ".txt"), "[0-9]+\\.txt"), ".txt")
 
 completions_df <- as_tibble(completions, .name_repair = "universal") %>%
-  separate(completion, into = c("rowid", "War_mention", "Putin_focus", "Post_type", "Opinion_intensity", "Sentiment", "Support_for_Putin", "Criticism_of_Putin", "Trust_in_Putin", "Competence_of_Putin",
-                          "State_of_war_for_Russia", "Responsibility_for_the_war", "Course_of_action_for_Russia"), sep = "\n(\n)?") %>%
-  mutate(rowid = str_remove_all(rowid, "PostID ")) %>%
-  mutate(War_mention = str_remove(War_mention, "War_mention: "),
-         War_mention_category = str_remove_all(str_trim(str_remove_all(str_extract(War_mention, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         War_mention_justification = str_trim(str_remove_all(War_mention, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         War_mention = str_extract(War_mention, "[0-9]|N/A")) %>%
-  mutate(Putin_focus = str_remove(Putin_focus, "Putin_focus: "),
-         Putin_focus_category = str_remove_all(str_trim(str_remove_all(str_extract(Putin_focus, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Putin_focus_justification = str_trim(str_remove_all(Putin_focus, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Putin_focus = str_extract(Putin_focus, "[0-9]|N/A")) %>%
-  mutate(Post_type = str_remove(Post_type, "Post_type: "),
-         Post_type_category = str_remove_all(str_trim(str_remove_all(str_extract(Post_type, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Post_type_justification = str_trim(str_remove_all(Post_type, "([0-9])?(N/A)?(\\s+)?\\|.*\\|")),
-         Post_type = str_extract(Post_type, "[0-9]|N/A")) %>%
-  mutate(Opinion_intensity = str_remove(Opinion_intensity, "Opinion_intensity: "),
-         Opinion_intensity_category = str_remove_all(str_trim(str_remove_all(str_extract(Opinion_intensity, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Opinion_intensity_justification = str_trim(str_remove_all(Opinion_intensity, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Opinion_intensity = str_extract(Opinion_intensity, "[0-9]|N/A")) %>%
-  mutate(Sentiment = str_remove(Sentiment, "Sentiment: "),
-         Sentiment_category = str_remove_all(str_trim(str_remove_all(str_extract(Sentiment, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Sentiment_justification = str_trim(str_remove_all(Sentiment, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Sentiment = str_extract(Sentiment, "[0-9]|N/A")) %>%
-  mutate(Support_for_Putin = str_remove(Support_for_Putin, "Support_for_Putin: "),
-         Support_for_Putin_category = str_remove_all(str_trim(str_remove_all(str_extract(Support_for_Putin, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Support_for_Putin_justification = str_trim(str_remove_all(Support_for_Putin, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Support_for_Putin = str_extract(Support_for_Putin, "[0-9]|N/A")) %>%
-  mutate(Criticism_of_Putin = str_remove(Criticism_of_Putin, "Criticism_of_Putin: "),
-         Criticism_of_Putin_category = str_remove_all(str_trim(str_remove_all(str_extract(Criticism_of_Putin, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Criticism_of_Putin_justification = str_trim(str_remove_all(Criticism_of_Putin, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Criticism_of_Putin = str_extract(Criticism_of_Putin, "[0-9]|N/A")) %>%
-  mutate(Trust_in_Putin = str_remove(Trust_in_Putin, "Trust_in_Putin: "),
-         Trust_in_Putin_category = str_remove_all(str_trim(str_remove_all(str_extract(Trust_in_Putin, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Trust_in_Putin_justification = str_trim(str_remove_all(Trust_in_Putin, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Trust_in_Putin = str_extract(Trust_in_Putin, "[0-9]|N/A")) %>%
-  mutate(Competence_of_Putin = str_remove(Competence_of_Putin, "Competence_of_Putin: "),
-         Competence_of_Putin_category = str_remove_all(str_trim(str_remove_all(str_extract(Competence_of_Putin, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Competence_of_Putin_justification = str_trim(str_remove_all(Competence_of_Putin, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Competence_of_Putin = str_extract(Competence_of_Putin, "[0-9]|N/A")) %>%
-  mutate(State_of_war_for_Russia = str_remove(State_of_war_for_Russia, "State_of_war_for_Russia: "),
-         State_of_war_for_Russia_category = str_remove_all(str_trim(str_remove_all(str_extract(State_of_war_for_Russia, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         State_of_war_for_Russia_justification = str_trim(str_remove_all(State_of_war_for_Russia, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         State_of_war_for_Russia = str_extract(State_of_war_for_Russia, "[0-9]|N/A")) %>%
-  mutate(Responsibility_for_the_war = str_remove(Responsibility_for_the_war, "Responsibility_for_the_war: "),
-         Responsibility_for_the_war_category = str_remove_all(str_trim(str_remove_all(str_extract(Responsibility_for_the_war, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Responsibility_for_the_war_justification = str_trim(str_remove_all(Responsibility_for_the_war, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Responsibility_for_the_war = str_extract(Responsibility_for_the_war, "[0-9]|N/A")) %>%
-  mutate(Course_of_action_for_Russia = str_remove(Course_of_action_for_Russia, "Course_of_action_for_Russia: "),
-         Course_of_action_for_Russia_category = str_remove_all(str_trim(str_remove_all(str_extract(Course_of_action_for_Russia, "\\|.*\\|"), "\\|")), "\\)|\\("),
-         Course_of_action_for_Russia_justification = str_trim(str_remove_all(Course_of_action_for_Russia, "([0-9])?(N/A)?(\\s+)?\\|.*\\| ")),
-         Course_of_action_for_Russia = str_extract(Course_of_action_for_Russia, "[0-9]|N/A")) %>%
-  dplyr::select(rowid,
-                War_mention, War_mention_category, War_mention_justification,
-                Putin_focus, Putin_focus_category, Putin_focus_justification,
-                Post_type, Post_type_category, Post_type_justification,
-                Opinion_intensity, Opinion_intensity_category, Opinion_intensity_justification,
-                Sentiment, Sentiment_category, Sentiment_justification,
-                Support_for_Putin, Support_for_Putin_category, Support_for_Putin_justification,
-                Criticism_of_Putin, Criticism_of_Putin_category, Criticism_of_Putin_justification,
-                Trust_in_Putin, Trust_in_Putin_category, Trust_in_Putin_justification,
-                Competence_of_Putin, Competence_of_Putin_category, Competence_of_Putin_justification,
-                State_of_war_for_Russia, State_of_war_for_Russia_category, State_of_war_for_Russia_justification,
-                Responsibility_for_the_war, Responsibility_for_the_war_category, Responsibility_for_the_war_justification,
-                Course_of_action_for_Russia, Course_of_action_for_Russia_category, Course_of_action_for_Russia_justification)
+  separate(completion, into = c("rowid",
+                                "War_mention", "Putin_focus", "Post_type", "Opinion_intensity", "Sentiment",
+                                "Support_for_Putin", "Criticism_of_Putin", "Trust_in_Putin", "Competence_of_Putin",
+                                "State_of_war_for_Russia", "Responsibility_for_the_war", "Course_of_action_for_Russia"), sep = "\n(\n)?") %>%
+  mutate(rowid = as.numeric(str_remove_all(rowid, "PostID(:)? "))) %>%
+  mutate(postid = as.numeric(postids)) %>%
+  mutate(War_mention = str_extract(War_mention, "[0-9]|N/A")) %>%
+  mutate(Putin_focus = str_extract(Putin_focus, "[0-9]|N/A")) %>%
+  mutate(Post_type = str_extract(Post_type, "[0-9]+|N/A")) %>%
+  mutate(Opinion_intensity = str_extract(Opinion_intensity, "[0-9]+|N/A")) %>%
+  mutate(Sentiment = str_extract(Sentiment, "[0-9]+|N/A")) %>%
+  mutate(Support_for_Putin = str_extract(Support_for_Putin, "[0-9]+|N/A")) %>%
+  mutate(Criticism_of_Putin = str_extract(Criticism_of_Putin, "[0-9]+|N/A")) %>%
+  mutate(Trust_in_Putin = str_extract(Trust_in_Putin, "[0-9]+|N/A")) %>%
+  mutate(Competence_of_Putin = str_extract(Competence_of_Putin, "[0-9]+|N/A")) %>%
+  mutate(State_of_war_for_Russia = str_extract(State_of_war_for_Russia, "[0-9]+|N/A")) %>%
+  mutate(Responsibility_for_the_war = str_extract(Responsibility_for_the_war, "[0-9]+|N/A")) %>%
+  mutate(Course_of_action_for_Russia = str_extract(Course_of_action_for_Russia, "[0-9]+|N/A")) %>%
+  dplyr::select(rowid, postid,
+                War_mention, Putin_focus, Post_type, Opinion_intensity, Sentiment,
+                Support_for_Putin, Criticism_of_Putin, Trust_in_Putin, Competence_of_Putin,
+                State_of_war_for_Russia, Responsibility_for_the_war, Course_of_action_for_Russia) %>%
+  mutate_all(~ifelse(. == "N/A", NA, .))
 
-saveRDS(completions_df, file = "./Data/Validation_Samples/Fall_2023/completions_chatgpt_2.rds")
-saveRDS(tokenuse, file = "./Data/Validation_Samples/Fall_2023/tokenuse_chatgpt_2.rds")
+completions_df %>%
+  filter(is.na(rowid))
 
+# saveRDS(completions_df, file = "./Data/Validation_Samples/Winter_2023/completions_df_1.rds")
+# saveRDS(tokenuse, file = "./Data/Validation_Samples/Winter_2023/Tokenuse_1.rds")
+
+##### PLOT ######
+
+completions1 <- read_rds("./Data/Validation_Samples/Winter_2023/completions_df_1.rds") %>%
+  bind_rows()
+tokenuse1 <- lapply(list.files("./Data/Validation_Samples/Winter_2023/ChatGPT_output_1/", full.names = TRUE, pattern = ".csv"), read.csv) %>%
+  bind_rows()
+completions2 <- read_rds("./Data/Validation_Samples/Winter_2023/completions_df_2.rds")
+tokenuse2 <- lapply(list.files("./Data/Validation_Samples/Winter_2023/ChatGPT_output_2/", full.names = TRUE, pattern = ".csv"), read.csv) %>%
+  bind_rows()
+
+completions_all <- bind_rows(completions1, completions2)
+tokenuse_all <- bind_rows(tokenuse1, tokenuse2)
+
+(sum(tokenuse_all$prompt_tokens)/1000)*0.0015 + (sum(tokenuse_all$completion_tokens)/1000)*0.002
+# 18.26015 dollar $$ spent
+
+telegrams1 <- readRDS("./Data/Validation_Samples/Winter_2023/Subsample_Fall2023_1.rds") %>%
+  mutate(message = str_remove(message, "_"))
+telegrams2 <- readRDS("./Data/Validation_Samples/Winter_2023/Subsample_Fall2023_2.rds") %>%
+  mutate(message = str_remove(message, "_"))
+
+completions_all <- completions_all %>%
+  select(-postid) %>%
+  left_join(telegrams1 %>% bind_rows(telegrams2), by = join_by(rowid))
+
+# saveRDS(completions_all, file = "./Data/Coded_posts_13_11_2023.rds")
+
+completions_all %>%
+  group_by(Post_type) %>%
+  count()
+
+#### PLOTS ####
+
+plotposts <- completions_all %>%
+  left_join(telegrams1 %>% bind_rows(telegrams2) %>% select(date, rowid)) %>%
+  mutate(year_month = paste0( substr(date, 6, 7), "/", substr(date, 3, 4))) %>%
+  select(rowid, year_month, Sentiment, Support_for_Putin, Criticism_of_Putin, Trust_in_Putin, Competence_of_Putin) %>%
+  filter(year_month != "11/23") %>%
+  mutate(year_month = factor(year_month, levels = c("01/22", "02/22", "03/22", "04/22", "05/22", "06/22", "07/22", "08/22", "09/22",
+                                                    "10/22", "11/22", "12/22", "01/23", "02/23", "03/23", "04/23", "05/23", "06/23",
+                                                    "07/23", "08/23", "09/23", "10/23")))
+
+support_p <- plotposts %>%
+  drop_na(rowid, year_month) %>%
+  mutate(support = as.numeric(Support_for_Putin)) %>%
+  group_by(year_month) %>%
+  summarise(Support = mean(support, na.rm = TRUE)) %>%
+  ggplot(aes(year_month, Support, group = 1)) +
+  ylim(1,3) +
+  geom_line(linewidth = 1) +
+  labs(x = "") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+sentiment_p <- plotposts %>%
+  drop_na(rowid, year_month) %>%
+  mutate(sentiment = as.numeric(Sentiment)) %>%
+  group_by(year_month) %>%
+  summarise(Sentiment = mean(sentiment, na.rm = TRUE)) %>%
+  ggplot(aes(year_month, Sentiment, group = 1)) +
+  ylim(1,3) +
+  labs(x = "") +
+  geom_line(linewidth = 1) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+critique_p <- plotposts %>%
+  drop_na(rowid, year_month) %>%
+  mutate(critique = as.numeric(Criticism_of_Putin)) %>%
+  group_by(year_month) %>%
+  summarise(Critique = mean(critique, na.rm = TRUE)) %>%
+  ggplot(aes(year_month, Critique, group = 1)) +
+  ylim(1,3) +
+  labs(x = "") +
+  geom_line(linewidth = 1) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+trust_p <- plotposts %>%
+  drop_na(rowid, year_month) %>%
+  mutate(trust = as.numeric(Trust_in_Putin)) %>%
+  group_by(year_month) %>%
+  summarise(Trust = mean(trust, na.rm = TRUE)) %>%
+  ggplot(aes(year_month, Trust, group = 1)) +
+  ylim(1,3) +
+  labs(x = "") +
+  geom_line(linewidth = 1) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+competence_p <- plotposts %>%
+  drop_na(rowid, year_month) %>%
+  mutate(competence = as.numeric(Competence_of_Putin)) %>%
+  group_by(year_month) %>%
+  summarise(Competence = mean(competence, na.rm = TRUE)) %>%
+  ggplot(aes(year_month, Competence, group = 1)) +
+  ylim(1,3) +
+  geom_line(linewidth = 1) +
+  labs(x = "") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+codeplots <- cowplot::plot_grid(support_p, sentiment_p, competence_p, trust_p, # critique_p
+                                labels = c("Support", "Sentiment", #"Criticism",
+                                           "Competence", "Trust"), ncol = 2)
+
+ggsave(codeplots, file = "./Figures/Coded_plots.pdf", width = 18, height = 10, dpi = 150)
