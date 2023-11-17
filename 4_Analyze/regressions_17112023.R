@@ -26,6 +26,23 @@ map_lm <- function( data, ...){
   return(x)
 }
 
+coef_names <- c("causalties" = "Causalties",
+                "actuall_area" = "Occupied Area",
+                "area_change" = "Occupied Area, daily change",
+                "ratio_ru_ua" = "RUS/UKR LER",
+                "ratio_ru_ua:area_change" = "Interaction LER, Area Change",
+                "months" = "Months since invasion",
+                "russia_total" = "Russian cumulative losses",
+                "causalties:area_change" = "Interaction, Causalties, Area Change",
+                "ratio_ru_ua:actuall_area" = "Interaction, LER, Occupied Area",
+                "causalties" = "Causalties",
+                "actuall_area" = "Occupied Area",
+                "ratio_ru_ua" = "RUS/UKR LER",
+                "change_3" = "Change (3 days)",
+                "months" = "Months since invasion",
+                "russia_total" = "Russian cumulative losses"
+)
+
 
 #### MENTIONED REGRESSIONS ####
 
@@ -38,16 +55,18 @@ mentioned_models <- list()
 
 mentioned_models <- map2("putin", indep, st_formula_vector = "months", map_lm, data = mentioned)
 
-multiplot(mentioned_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(mentioned_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE,
+          newNames = coef_names
+            ) +
   labs(title = "Mentioned") +
   ggthemes::theme_excel_new()
 
 
-multiplot(mentioned_models[8], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(mentioned_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE,
+          newNames = coef_names
+) +
   labs(title = "Mentioned") +
   ggthemes::theme_excel_new()
-
-
 
 ##### SUPPORT REGRESSIONS ####
 
@@ -59,14 +78,17 @@ support_models <- list()
 
 support_models <- map2("Support_for_Putin", indep, st_formula_vector = "months", map_lm, data = mod_data)
 
-multiplot(support_models, outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(support_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Support") +
   ggthemes::theme_excel_new()
 
 
-multiplot(support_models[9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(support_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Support") +
   ggthemes::theme_excel_new()
+
+
+
 
 
 #### TRUST REGRESSIONS ####
@@ -79,14 +101,14 @@ trust_models <- list()
 
 trust_models <- map2("Trust_in_Putin", indep, st_formula_vector = "months", map_lm, data = mod_data)
 
-multiplot(trust_models, outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(trust_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Trust") +
   ggthemes::theme_excel_new()
 
-
-multiplot(trust_models[9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
-  labs(title = "Support") +
+multiplot(trust_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
+  labs(title = "Trust") +
   ggthemes::theme_excel_new()
+
 
 
 #### COMPETENCE REGRESSIONS ####
@@ -99,15 +121,14 @@ competence_models <- list()
 
 competence_models <- map2("Competence_of_Putin", indep, st_formula_vector = "months", map_lm, data = mod_data)
 
-multiplot(competence_models, outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(competence_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Competence") +
   ggthemes::theme_excel_new()
 
 
-multiplot(competence_models[9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(competence_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Competence") +
   ggthemes::theme_excel_new()
-
 
 #### SENTIMENT REGRESSIONS ####
 
@@ -119,14 +140,14 @@ sentiment_models <- list()
 
 sentiment_models <- map2("Sentiment", indep, st_formula_vector = "months", map_lm, data = mod_data)
 
-multiplot(sentiment_models, outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(sentiment_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Sentiment") +
   ggthemes::theme_excel_new()
 
-
-multiplot(competence_models[9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(sentiment_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Sentiment") +
   ggthemes::theme_excel_new()
+
 
 
 #### CRITICISM REGRESSIONS ####
@@ -141,12 +162,12 @@ criticism_models <- list()
 
 criticism_models <- map2("Criticism_of_Putin", indep, st_formula_vector = "months", map_lm, data = mod_data)
 
-multiplot(criticism_models, outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(criticism_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Criticism") +
   ggthemes::theme_excel_new()
 
 
-multiplot(criticism_models[8], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(criticism_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "Criticism") +
   ggthemes::theme_excel_new()
 
@@ -163,14 +184,14 @@ sof_models <- list()
 
 sof_models <- map2("State_of_war_for_Russia", indep, st_formula_vector = "months", map_lm, data = mod_data)
 
-multiplot(sof_models, outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(sof_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "State of War") +
   ggthemes::theme_excel_new()
 
-
-multiplot(sof_models[9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(sof_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "State of War") +
   ggthemes::theme_excel_new()
+
 
 
 #### THUMBS UP 👍 REGRESSIONS ####
@@ -185,17 +206,16 @@ tu_models <- list()
 
 tu_models <- map2("tu", indep, st_formula_vector = "months", map_lm, data = reactions)
 
-multiplot(tu_models, outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(tu_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "#Thumbs Up") +
   ggthemes::theme_excel_new()
 
 
-multiplot(tu_models[9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
+multiplot(tu_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "#Thumbs Up") +
   ggthemes::theme_excel_new()
 
 
-#### Some quick descriptions ####
 
 
 
@@ -203,28 +223,6 @@ multiplot(tu_models[9], outerCI = 0, innerCI = 1.96, intercept = FALSE) +
 
 
 
-mod_data %>%
-  drop_na() %>%
-  ggplot(aes(Support_for_Putin)) +
-  geom_density(linewidth = 1) +
-  theme_barbie() +
-  labs(x = "", y = "", title = "Support for Putin")
-
-
-mod_data %>%
-  drop_na() %>%
-  ggplot(aes(Competence_of_Putin)) +
-  geom_bar(fill = barbie_theme_colors["medium"]) +
-  theme_barbie() +
-  labs(x = "", y = "", title = "Competence of Putin")
-
-
-mod_data %>%
-  drop_na() %>%
-  ggplot(aes(Sentiment)) +
-  geom_bar(fill = barbie_theme_colors["medium"]) +
-  theme_barbie() +
-  labs(x = "", y = "", title = "Sentiment")
 
 
 
