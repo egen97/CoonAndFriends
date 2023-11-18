@@ -1,6 +1,6 @@
 #### PRE AMBLE ####
 
-pacman::p_load(tidyverse, coefplot, ThemePark)
+pacman::p_load(tidyverse, coefplot, ThemePark, stargazer)
 
 mentioned <- readRDS("Data/mentioned_17112023.rds")
 mod_data <- readRDS("Data/mod_data_17112023.rds")
@@ -68,6 +68,9 @@ multiplot(mentioned_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE,
   labs(title = "Mentioned") +
   ggthemes::theme_excel_new()
 
+
+stargazer(mentioned_models, type = "text", title = "Mentioned",  out = "4_Analyze/regressions/mentioned_18112023.tex")
+
 ##### SUPPORT REGRESSIONS ####
 
 indep <- c("russia_total", "change_3", "ratio_ru_ua", "actuall_area", "causalties",
@@ -89,7 +92,7 @@ multiplot(support_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, n
 
 
 
-
+stargazer(support_models,type = "text", title = "Support", out =  "4_Analyze/regressions/support_18112023.tex")
 
 #### TRUST REGRESSIONS ####
 
@@ -109,6 +112,7 @@ multiplot(trust_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, new
   labs(title = "Trust") +
   ggthemes::theme_excel_new()
 
+stargazer(trust_models,type = "text", title = "Trust", out = "trust_18112023.tex")
 
 
 #### COMPETENCE REGRESSIONS ####
@@ -130,6 +134,8 @@ multiplot(competence_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE
   labs(title = "Competence") +
   ggthemes::theme_excel_new()
 
+stargazer(competence_models, type = "text", title = "Competence" ,out = "competence_18112023.tex")
+
 #### SENTIMENT REGRESSIONS ####
 
 indep <- c("russia_total", "change_3", "ratio_ru_ua", "actuall_area", "causalties",
@@ -148,6 +154,7 @@ multiplot(sentiment_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE,
   labs(title = "Sentiment") +
   ggthemes::theme_excel_new()
 
+stargazer(sentiment_models,type = "text", title = "Sentiment", out = "4_Analyze/regressions/sentiment_18112023.tex")
 
 
 #### CRITICISM REGRESSIONS ####
@@ -171,6 +178,7 @@ multiplot(criticism_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE,
   labs(title = "Criticism") +
   ggthemes::theme_excel_new()
 
+stargazer(criticism_models,type = "text", title = "Criticism", out = "4_Analyze/regressions/critisism_18112023.tex")
 
 #### STATE OF WAR REGRESSIONS ####
 
@@ -191,6 +199,9 @@ multiplot(sof_models[1:5], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNa
 multiplot(sof_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNames = coef_names) +
   labs(title = "State of War") +
   ggthemes::theme_excel_new()
+
+
+stargazer(sof_models,type = "text", title = "State of War", out = "4_Analyze/regressions/sof_18112023.tex")
 
 
 
@@ -215,7 +226,7 @@ multiplot(tu_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNam
   labs(title = "#Thumbs Up") +
   ggthemes::theme_excel_new()
 
-
+stargazer(tu_models, type = "text", title = "Thumbs Up", out = "4_Analyze/regressions/thumbs_18112023.tex")
 
 
 
