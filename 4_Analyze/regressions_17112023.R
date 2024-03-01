@@ -69,7 +69,7 @@ multiplot(mentioned_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE,
   ggthemes::theme_excel_new()
 
 
-stargazer(mentioned_models, type = "text", title = "Mentioned",  out = "4_Analyze/regressions/mentioned_18112023.tex")
+stargazer(mentioned_models,float.env = "sidewaystable", font.size = "tiny", no.space = TRUE, dep.var.labels = "Mentioned", title = "Mentioned",  out = "4_Analyze/regressions/mentioned_18112023.tex")
 
 ##### SUPPORT REGRESSIONS ####
 
@@ -92,7 +92,7 @@ multiplot(support_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, n
 
 
 
-stargazer(support_models,type = "text", title = "Support", out =  "4_Analyze/regressions/support_18112023.tex")
+stargazer(support_models,type = "text",float.env = "sidewaystable", font.size = "tiny", no.space = TRUE, dep.var.labels = "Support", title = "Support", out =  "4_Analyze/regressions/support_18112023.tex")
 
 #### TRUST REGRESSIONS ####
 
@@ -112,7 +112,7 @@ multiplot(trust_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, new
   labs(title = "Trust") +
   ggthemes::theme_excel_new()
 
-stargazer(trust_models,type = "text", title = "Trust", out = "trust_18112023.tex")
+stargazer(trust_models,type = "text", float.env = "sidewaystable", font.size = "tiny", no.space = TRUE, dep.var.labels = "Trust", title = "Trust", out = "trust_18112023.tex")
 
 
 #### COMPETENCE REGRESSIONS ####
@@ -134,7 +134,7 @@ multiplot(competence_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE
   labs(title = "Competence") +
   ggthemes::theme_excel_new()
 
-stargazer(competence_models, type = "text", title = "Competence" ,out = "competence_18112023.tex")
+stargazer(competence_models, type = "text", float.env = "sidewaystable", font.size = "tiny", no.space = TRUE, dep.var.labels = "Competence", title = "Competence" ,out = "competence_18112023.tex")
 
 #### SENTIMENT REGRESSIONS ####
 
@@ -154,7 +154,7 @@ multiplot(sentiment_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE,
   labs(title = "Sentiment") +
   ggthemes::theme_excel_new()
 
-stargazer(sentiment_models,type = "text", title = "Sentiment", out = "4_Analyze/regressions/sentiment_18112023.tex")
+stargazer(sentiment_models,type = "text", float.env = "sidewaystable", font.size = "tiny", no.space = TRUE, dep.var.labels = "Sentiment", title = "Sentiment", out = "4_Analyze/regressions/sentiment_18112023.tex")
 
 
 #### CRITICISM REGRESSIONS ####
@@ -178,7 +178,7 @@ multiplot(criticism_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE,
   labs(title = "Criticism") +
   ggthemes::theme_excel_new()
 
-stargazer(criticism_models,type = "text", title = "Criticism", out = "4_Analyze/regressions/critisism_18112023.tex")
+stargazer(criticism_models,type = "text", float.env = "sidewaystable", font.size = "tiny", no.space = TRUE, dep.var.labels = "Criticism", title = "Criticism", out = "4_Analyze/regressions/critisism_18112023.tex")
 
 #### STATE OF WAR REGRESSIONS ####
 
@@ -201,7 +201,7 @@ multiplot(sof_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNa
   ggthemes::theme_excel_new()
 
 
-stargazer(sof_models,type = "text", title = "State of War", out = "4_Analyze/regressions/sof_18112023.tex")
+stargazer(sof_models,type = "text", float.env = "sidewaystable", font.size = "tiny", no.space = TRUE, dep.var.labels = "State of the War", title = "State of War", out = "4_Analyze/regressions/sof_18112023.tex")
 
 
 
@@ -226,7 +226,7 @@ multiplot(tu_models[6:9], outerCI = 0, innerCI = 1.96, intercept = FALSE, newNam
   labs(title = "#Thumbs Up") +
   ggthemes::theme_excel_new()
 
-stargazer(tu_models, type = "text", title = "Thumbs Up", out = "4_Analyze/regressions/thumbs_18112023.tex")
+stargazer(tu_models, type = "text",float.env = "sidewaystable", font.size = "tiny", no.space = TRUE, dep.var.labels = "Thumbs Up", title = "Thumbs Up", out = "4_Analyze/regressions/thumbs_18112023.tex")
 
 
 
