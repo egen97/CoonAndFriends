@@ -30,3 +30,16 @@ complete <- complete %>%
   mutate(
     time_since_start = as.numeric(date - as.Date("2022-01-01"))
   )
+
+complete <- complete %>%
+  left_join(
+    ler_data,
+    by = c("date" = "week")
+  )
+
+
+
+# Need the rest for weeks to..:/
+
+
+
