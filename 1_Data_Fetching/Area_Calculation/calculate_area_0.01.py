@@ -3,23 +3,23 @@ import os
 import csv
 import numpy as np
 
-
+os.chdir("C:/Users/egnilsen/OneDrive - Universitetet i Oslo/Hackaton/CoonAndFriends/")
 #target_color = (176, 180, 245)  # OpenCV uses BGR channel ordring, and not RGB.
 target_color = (177,181,246)
 color_range = 20 #50  # range of 20 looks fine (at least for the first image).
 
 # Define the folder containing the images
-folder = "Data/pictures/renamed/"
+folder = "Data/new_area_videoes/pictures/may25/"
 
 # Define the path to the output CSV file
-output_file = "Data/pictures/area.csv"
+output_file = "Data/new_area_videoes/area_may25.csv"
 
 # Open the CSV file for writing
 with open(output_file, 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
 
     # Write the header row
-    writer.writerow(["Filename", "Percentage"])
+    writer.writerow(["Filename", "Percentage", "Target_pixels", "total_pixels"])
 
     # Loop over every file in the folder
     for filename in os.listdir(folder):
@@ -46,4 +46,4 @@ with open(output_file, 'w', newline='') as csvfile:
             print(percentage, "per")
 
             # Write the filename and percentage to the CSV file
-            writer.writerow([filename, percentage])
+            writer.writerow([filename, percentage, target_pixels, num_pixels])
