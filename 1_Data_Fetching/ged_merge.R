@@ -101,10 +101,34 @@ day_data <- day_data %>%
   select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, death_russia, deaths_ukraine, russian_ler, ln_russian_ler, week)
 
 
+week_data <- day_data %>%
+  filter(week > as.Date("2021-02-01")) %>%
+  group_by(week) %>%
+  mutate(across(1:10, ~as.numeric(.x))) %>%
+  summarise(
+    war_mention = sum(war_mention, na.rm = TRUE),
+    impression_putin = mean(impression_putin, na.rm = TRUE),
+    support_putin = mean(support_putin, na.rm = TRUE),
+    criticism_putin = mean(criticism_putin, na.rm = TRUE),
+    occupied = mean(occupied, na.rm = TRUE),
+    death_russia = sum(death_russia, na.rm = TRUE),
+    deaths_ukraine = sum(deaths_ukraine, na.rm = TRUE),
+    russian_ler = deaths_ukraine/death_russia,
+    ln_russian_ler = log(russian_ler)
+  )
 
 
-#saveRDS(week_data, "Data/causalties_ler_data.rds")
+week_data %>%
+  ggplot(aes(russian_ler)) +
+  geom_density()
 
+week_data %>%
+  ggplot(aes(ln_russian_ler)) +
+  geom_density()
+
+saveRDS(week_data, "Data/week_data.rds")
+
+saveRDS(day_data, "Data/day_data.rds")
 
 
 
