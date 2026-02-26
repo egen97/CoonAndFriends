@@ -118,7 +118,7 @@ day_data %>%
 
 
 day_data <- day_data %>%
-  select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, death_russia, deaths_ukraine, russian_ler, ln_russian_ler, week)
+  select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, death_russia, deaths_ukraine, russian_ler, ln_russian_ler, week, Russia_Total, Ukraine_Total, eqipment_ler)
 
 
 week_data <- day_data %>%
