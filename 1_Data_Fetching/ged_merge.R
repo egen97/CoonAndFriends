@@ -9,7 +9,7 @@ depvars <- readRDS("Data/coded_posts_2025.rds")
 
 area_data <- readRDS("Data/area_2025.rds")
 
-
+Russia_Ukraine_Equipment_Losses_Original <- read_csv("Data/Russia-Ukraine Equipment Losses - Original.csv")
 #### Wrangle Dangle ###
 
 ged_war <- ged_data %>%
@@ -47,10 +47,23 @@ candidate_2025 <- candidate_2025 %>%
 war_data <- bind_rows(ged_war, candidate_2025)
 
 
-# Calculate ratio
-# Simple problem for daily data, many divisions by 0
+equipment_losses <- Russia_Ukraine_Equipment_Losses_Original %>%
+  select(Russia_Total, Ukraine_Total, eqipment_ler = `Ratio RU/UA`, Date)
 
-# One option: Calculate by week, and hope that it smooths? Or, put in a stand-in value
+equipment_losses <- equipment_losses %>%
+  mutate(
+    Date = as.Date(Date)
+  )
+
+# Calculate ratio
+# Simple problem for daily data, many divisions by 0. Add 1 to Russia if 0, created to many missing in later analysis..
+
+
+
+war_data <- war_data %>%
+  mutate(
+    death_russia = ifelse(death_russia == 0, 1, death_russia)
+  )
 
 war_data <- war_data %>%
   mutate(
@@ -85,11 +98,18 @@ area_data$two_week <- rollmean(area_data$occupied, 14, fill = "extend")
 complete <- depvars %>%
   full_join(area_data, by = "date")
 
+complete <- complete %>%
+  full_join(
+    equipment_losses,
+    by = c("date" = "Date")
+  )
+
 day_data <- complete %>%
   full_join(
     war_data,
     by = c("date" = "date_start")
     )
+
 
 
 day_data %>%
