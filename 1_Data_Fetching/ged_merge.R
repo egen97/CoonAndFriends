@@ -1,9 +1,13 @@
 #### Pre amble ####
 
-pacman::p_load(tidyverse, lubridate)
+pacman::p_load(tidyverse, lubridate, zoo)
 
 candidate_2025 <- read.csv("Data/ged_event_2025.csv")
 ged_data <- read.csv("Data/GEDEvent_v25_1.csv")
+
+depvars <- readRDS("Data/coded_posts_2025.rds")
+
+area_data <- readRDS("Data/area_2025.rds")
 
 
 #### Wrangle Dangle ###
@@ -51,31 +55,56 @@ war_data <- bind_rows(ged_war, candidate_2025)
 war_data <- war_data %>%
   mutate(
     date_start = ymd_hms(date_start),
-    week = floor_date(date_start, "week", week_start = 1)
+    week = floor_date(date_start, "week", week_start = 1),
+    russian_ler = deaths_ukraine/death_russia,
+    ln_russian_ler = log(russian_ler)
   )
 
 
 week_data <- war_data %>%
   group_by(week) %>%
   summarise(
-    death_russia = sum(death_russia),
-    deaths_ukraine = sum(deaths_ukraine)
-  )
+    week_death_russia = sum(death_russia),
+    week_deaths_ukraine = sum(deaths_ukraine)
+    )
 
 week_data <- week_data %>%
   mutate(
-    russian_ler = death_russia/deaths_ukraine,
-    ln_russian_ler = log(russian_ler)
+    week_russian_ler = deaths_ukraine/death_russia,
+    week_ln_russian_ler = log(week_russian_ler)
 
   )
 
+area_data$date <- as.Date(area_data$date)
 
-week_data %>%
-  ggplot(aes(week, ln_russian_ler, group = 1)) +
-  geom_line() +
-  geom_smooth()
+depvars$date <- as.Date(depvars$date)
 
-saveRDS(week_data, "Data/causalties_ler_data.rds")
+
+area_data$two_week <- rollmean(area_data$occupied, 14, fill = "extend")
+
+complete <- depvars %>%
+  full_join(area_data, by = "date")
+
+day_data <- complete %>%
+  full_join(
+    war_data,
+    by = c("date" = "date_start")
+    )
+
+
+day_data %>%
+  ggplot(aes(date, ln_russian_ler)) +
+  geom_line()
+
+
+day_data <- day_data %>%
+  select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, death_russia, deaths_ukraine, russian_ler, ln_russian_ler, week)
+
+
+
+
+#saveRDS(week_data, "Data/causalties_ler_data.rds")
+
 
 
 

@@ -39,7 +39,8 @@ complete <- complete %>%
 
 
 
-# Need the rest for weeks to..:/
+# It is vital for further analysis that all data is aggregated to the week level. Currently, dependent variables, as well as the area under occupation data, is at the day-by-day level, making the regression models unstable.
+# This may have adverse effects on the presented results.
 
 
 
