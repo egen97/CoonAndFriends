@@ -10,6 +10,9 @@ depvars <- readRDS("Data/coded_posts_2025.rds")
 area_data <- readRDS("Data/area_2025.rds")
 
 Russia_Ukraine_Equipment_Losses_Original <- read_csv("Data/Russia-Ukraine Equipment Losses - Original.csv")
+
+
+
 #### Wrangle Dangle ###
 
 ged_war <- ged_data %>%
@@ -62,15 +65,10 @@ equipment_losses <- equipment_losses %>%
 
 war_data <- war_data %>%
   mutate(
-    death_russia = ifelse(death_russia == 0, 1, death_russia)
-  )
-
-war_data <- war_data %>%
-  mutate(
     date_start = ymd_hms(date_start),
     week = floor_date(date_start, "week", week_start = 1),
-    russian_ler = deaths_ukraine/death_russia,
-    ln_russian_ler = log(russian_ler)
+    russian_ler = (deaths_ukraine + 0.5) / (death_russia + 0.5),
+    log_russian_ler = log(deaths_ukraine + 0.5) - log(death_russia + 0.5)
   )
 
 
@@ -83,8 +81,8 @@ week_data <- war_data %>%
 
 week_data <- week_data %>%
   mutate(
-    week_russian_ler = deaths_ukraine/death_russia,
-    week_ln_russian_ler = log(week_russian_ler)
+    week_russian_ler = (week_deaths_ukraine + 0.5) / (week_death_russia + 0.5),
+    week_log_russian_ler = log(week_deaths_ukraine + 0.5) - log(week_death_russia + 0.5)
 
   )
 
@@ -113,42 +111,25 @@ day_data <- complete %>%
 
 
 day_data %>%
-  ggplot(aes(date, ln_russian_ler)) +
+  ggplot(aes(date, log_russian_ler)) +
   geom_line()
 
 
 day_data <- day_data %>%
-  select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, death_russia, deaths_ukraine, russian_ler, ln_russian_ler, week, Russia_Total, Ukraine_Total, eqipment_ler)
+  select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, death_russia, deaths_ukraine, russian_ler, log_russian_ler, week, Russia_Total, Ukraine_Total, eqipment_ler)
 
 
-week_data <- day_data %>%
-  filter(week > as.Date("2021-02-01")) %>%
-  group_by(week) %>%
-  mutate(across(1:10, ~as.numeric(.x))) %>%
-  summarise(
-    war_mention = sum(war_mention, na.rm = TRUE),
-    impression_putin = mean(impression_putin, na.rm = TRUE),
-    support_putin = mean(support_putin, na.rm = TRUE),
-    criticism_putin = mean(criticism_putin, na.rm = TRUE),
-    occupied = mean(occupied, na.rm = TRUE),
-    death_russia = sum(death_russia, na.rm = TRUE),
-    deaths_ukraine = sum(deaths_ukraine, na.rm = TRUE),
-    russian_ler = deaths_ukraine/death_russia,
-    ln_russian_ler = log(russian_ler)
+day_data <- day_data %>%
+  full_join(
+    week_data, by = "week"
   )
 
 
-week_data %>%
-  ggplot(aes(russian_ler)) +
-  geom_density()
 
-week_data %>%
-  ggplot(aes(ln_russian_ler)) +
-  geom_density()
 
-saveRDS(week_data, "Data/week_data.rds")
 
-saveRDS(day_data, "Data/day_data.rds")
+
+saveRDS(day_data, "Data/complete_data.rds")
 
 
 
