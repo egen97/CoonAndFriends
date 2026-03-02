@@ -47,79 +47,80 @@ war_data <- war_data %>%
   )
 
 equipment_losses <- Russia_Ukraine_Equipment_Losses_Original %>%
-  select(Russia_Total, Ukraine_Total, eqipment_ler = `Ratio RU/UA`, Date)
+  select(Russia_Total, Ukraine_Total, eqipment_ler = `Ratio RU/UA`, date =  Date)
 
 equipment_losses <- equipment_losses %>%
   mutate(
-    Date = as.Date(Date)
+    date = as.Date(date)
   )
-
-# Calculate ratio
-# Simple problem for daily data, many divisions by 0. Add 1 to Russia if 0, created to many missing in later analysis..
-
-
 
 war_data <- war_data %>%
   mutate(
-    #date_start = ymd_hms(date_start),
     week = floor_date(date_start, "week", week_start = 1),
     russian_ler = (deaths_ukraine + 0.5) / (deaths_russia + 0.5),
     log_russian_ler = log(russian_ler)
   )
 
 
-week_data <- war_data %>%
-  group_by(week) %>%
-  summarise(
-    week_deaths_russia = sum(deaths_russia),
-    week_deaths_ukraine = sum(deaths_ukraine)
-    )
-
-week_data <- week_data %>%
-  mutate(
-    week_russian_ler = (week_deaths_ukraine) / (week_deaths_russia),
-    week_log_russian_ler = log(week_russian_ler)
-  )
 
 area_data$date <- as.Date(area_data$date)
 
 depvars$date <- as.Date(depvars$date)
 
 
-area_data$two_week <- rollmean(area_data$occupied, 14, fill = "extend")
+war_data <- war_data %>%
+  rename("date" = "date_start") %>%
+  full_join(area_data, by = "date") %>%
+  full_join(equipment_losses, by = "date")
 
-complete <- depvars %>%
-  full_join(area_data, by = "date")
+vars <- c("occupied",
+          "deaths_russia",
+          "deaths_ukraine",
+          "russian_ler",
+          "log_russian_ler",
+          "Russia_Total",
+          "Ukraine_Total",
+          "eqipment_ler")
 
-complete <- complete %>%
-  full_join(
-    equipment_losses,
-    by = c("date" = "Date")
+war_data <- war_data %>%
+  arrange(date) %>%
+
+  #  Rolling mean
+  mutate(
+    across(all_of(vars),
+           ~ rollmean(.x, 14, fill = "extend"),
+           .names = "{.col}_rollmean")
+  ) %>%
+
+  # 2 Rolling sd
+  mutate(
+    across(all_of(vars),
+           ~ rollapply(.x, 14, sd, fill = "extend", align = "right"),
+           .names = "{.col}_rollsd")
+  ) %>%
+
+  # 3 Deviation
+  mutate(
+    across(all_of(vars),
+           ~ .x - get(paste0(cur_column(), "_rollmean")),
+           .names = "{.col}_deviation")
+  ) %>%
+
+  # ±1 SD flag
+  mutate(
+    across(all_of(vars),
+           ~ case_when(
+             (.x - get(paste0(cur_column(), "_rollmean"))) >
+               get(paste0(cur_column(), "_rollsd"))  ~  1,
+             (.x - get(paste0(cur_column(), "_rollmean"))) <
+               -get(paste0(cur_column(), "_rollsd")) ~ -1,
+             TRUE ~ 0
+           ),
+           .names = "{.col}_sd_flag")
   )
 
-day_data <- complete %>%
-  full_join(
-    war_data,
-    by = c("date" = "date_start")
-    )
-
-
-
-day_data %>%
-  ggplot(aes(date, log_russian_ler)) +
-  geom_line()
-
-
-day_data <- day_data %>%
-  select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, deaths_russia, deaths_ukraine, russian_ler, log_russian_ler, week, Russia_Total, Ukraine_Total, eqipment_ler)
-
-
-day_data <- day_data %>%
-  full_join(
-    week_data, by = "week"
-  )
-
-
+day_data <- war_data %>%
+  full_join(depvars, by = "date")
 
 
 
