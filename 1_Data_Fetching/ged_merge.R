@@ -5,6 +5,7 @@ pacman::p_load(tidyverse, lubridate, zoo)
 candidate_2025 <- read.csv("Data/ged_event_2025.csv")
 ged_data <- read.csv("Data/GEDEvent_v25_1.csv")
 
+
 depvars <- readRDS("Data/coded_posts_2025.rds")
 
 area_data <- readRDS("Data/area_2025.rds")
@@ -12,43 +13,38 @@ area_data <- readRDS("Data/area_2025.rds")
 Russia_Ukraine_Equipment_Losses_Original <- read_csv("Data/Russia-Ukraine Equipment Losses - Original.csv")
 
 
-
 #### Wrangle Dangle ###
 
 ged_war <- ged_data %>%
-  filter(
-    str_detect(conflict_name, "Ukraine"),
-    year >= 2021
-  )
-
-
-candidate_war <- candidate_2025 %>%
-  filter(
-    str_detect(conflict_name, "Ukraine"),
-    year >= 2021
-  )
-
-
-ged_war <- ged_war %>%
+  filter(str_detect(conflict_name, "Ukraine")) %>%
+  mutate(date_start = as.Date(date_start)) %>%
+  filter(date_start >= as.Date("2022-02-24")) %>%
   select(
     year,
-    death_russia = deaths_a,
+    deaths_russia = deaths_a,
     deaths_ukraine = deaths_b,
     date_start
   )
 
 candidate_2025 <- candidate_2025 %>%
+  filter(str_detect(conflict_name, "Ukraine")) %>%
+  mutate(date_start = as.Date(date_start)) %>%
+  filter(date_start >= as.Date("2022-02-24")) %>%
   select(
     year,
-    death_russia = deaths_a,
+    deaths_russia = deaths_a,
     deaths_ukraine = deaths_b,
     date_start
   )
 
-
-
 war_data <- bind_rows(ged_war, candidate_2025)
 
+war_data <- war_data %>%
+  group_by(date_start) %>%
+  summarise(
+    across(starts_with("deaths"), ~ sum(.x, na.rm = TRUE)),
+    .groups = "drop"
+  )
 
 equipment_losses <- Russia_Ukraine_Equipment_Losses_Original %>%
   select(Russia_Total, Ukraine_Total, eqipment_ler = `Ratio RU/UA`, Date)
@@ -65,25 +61,24 @@ equipment_losses <- equipment_losses %>%
 
 war_data <- war_data %>%
   mutate(
-    date_start = ymd_hms(date_start),
+    #date_start = ymd_hms(date_start),
     week = floor_date(date_start, "week", week_start = 1),
-    russian_ler = (deaths_ukraine + 0.5) / (death_russia + 0.5),
-    log_russian_ler = log(deaths_ukraine + 0.5) - log(death_russia + 0.5)
+    russian_ler = (deaths_ukraine + 0.5) / (deaths_russia + 0.5),
+    log_russian_ler = log(russian_ler)
   )
 
 
 week_data <- war_data %>%
   group_by(week) %>%
   summarise(
-    week_death_russia = sum(death_russia),
+    week_deaths_russia = sum(deaths_russia),
     week_deaths_ukraine = sum(deaths_ukraine)
     )
 
 week_data <- week_data %>%
   mutate(
-    week_russian_ler = (week_deaths_ukraine + 0.5) / (week_death_russia + 0.5),
-    week_log_russian_ler = log(week_deaths_ukraine + 0.5) - log(week_death_russia + 0.5)
-
+    week_russian_ler = (week_deaths_ukraine) / (week_deaths_russia),
+    week_log_russian_ler = log(week_russian_ler)
   )
 
 area_data$date <- as.Date(area_data$date)
@@ -116,7 +111,7 @@ day_data %>%
 
 
 day_data <- day_data %>%
-  select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, death_russia, deaths_ukraine, russian_ler, log_russian_ler, week, Russia_Total, Ukraine_Total, eqipment_ler)
+  select(war_mention, impression_putin, support_putin, criticism_putin, occupied, two_week, deaths_russia, deaths_ukraine, russian_ler, log_russian_ler, week, Russia_Total, Ukraine_Total, eqipment_ler)
 
 
 day_data <- day_data %>%
