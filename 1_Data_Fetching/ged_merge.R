@@ -124,7 +124,7 @@ day_data <- war_data %>%
 
 
 
-
+saveRDS(war_data, "Data/war_data.rds")
 saveRDS(day_data, "Data/complete_data.rds")
 
 
