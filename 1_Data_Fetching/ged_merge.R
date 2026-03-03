@@ -47,7 +47,13 @@ war_data <- war_data %>%
   )
 
 equipment_losses <- Russia_Ukraine_Equipment_Losses_Original %>%
-  select(Russia_Total, Ukraine_Total, eqipment_ler = `Ratio RU/UA`, date =  Date)
+  select(Russia_Total, Ukraine_Total, Ukraine_ler = `Ratio RU/UA`, date =  Date) %>%
+  mutate(
+    equipment_ler = 1/Ukraine_ler,
+    log_equipment_ler = log(equipment_ler)
+    ) %>%
+  select(-Ukraine_ler)
+
 
 equipment_losses <- equipment_losses %>%
   mutate(
@@ -80,7 +86,8 @@ vars <- c("occupied",
           "log_russian_ler",
           "Russia_Total",
           "Ukraine_Total",
-          "eqipment_ler")
+          "equipment_ler",
+          "log_equipment_ler")
 
 war_data <- war_data %>%
   arrange(date) %>%
