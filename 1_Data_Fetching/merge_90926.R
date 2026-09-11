@@ -220,3 +220,135 @@ m_posttype_trend <- feols(
   data = tone_data, cluster = ~date + source
 )
 etable(m_posttype_dev, m_posttype_level, m_posttype_trend)
+
+# ==========================================================================
+# Part 3: does any of this differ by channel type? (scope conditions)
+# ==========================================================================
+# Channel categories are treated as scope conditions, not moderators: some
+# outcomes structurally can't occur in some groups (a state channel is not
+# going to criticize Putin), so each group gets its own set of models here
+# rather than one pooled model with an interaction term.
+channel_categories <- readRDS("2_Descriptives/channel_categories.rds")
+
+# --- Part 1, by group: does the mention-rate result hold within each channel type? ---
+putin_mention_grouped <- readRDS("Data/putin_mention_population_2022_2025.rds") %>%
+  transmute(date = as.Date(date), source, putin_mention) %>%
+  left_join(channel_categories, by = "source") %>%
+  mutate(category = replace_na(category, "Uncategorized"))
+
+day_panel_t <- day_panel %>% mutate(t = as.numeric(date - min(date)))
+
+day_level_grouped <- putin_mention_grouped %>%
+  group_by(category, date) %>%
+  summarise(n_posts = n(), n_mentioned = sum(putin_mention, na.rm = TRUE), .groups = "drop") %>%
+  mutate(share_mentioned = n_mentioned / n_posts) %>%
+  left_join(day_panel_t, by = "date")
+
+groups <- sort(unique(day_level_grouped$category))
+
+m_day_by_group <- setNames(lapply(groups, function(g) {
+  feols(
+    share_mentioned ~ occupied_deviation + russian_ler_deviation + deaths_russia + deaths_ukraine,
+    data = filter(day_level_grouped, category == g), weights = ~n_posts
+  )
+}), groups)
+etable(m_day_by_group)
+
+# PMC/paramilitary-affiliated is the one group where occupied territory
+# predicts the mention rate -- check it against raw level and level+trend
+# too, the same way Part 1 stress-tested the pooled (null) result.
+d_pmc <- filter(day_level_grouped, category == "PMC/paramilitary-affiliated")
+m_pmc_dev <- feols(share_mentioned ~ occupied_deviation + russian_ler_deviation + deaths_russia + deaths_ukraine, data = d_pmc, weights = ~n_posts)
+m_pmc_lvl <- feols(share_mentioned ~ occupied + russian_ler + deaths_russia + deaths_ukraine, data = d_pmc, weights = ~n_posts)
+m_pmc_trd <- feols(share_mentioned ~ occupied + russian_ler + deaths_russia + deaths_ukraine + t, data = d_pmc, weights = ~n_posts)
+etable(m_pmc_dev, m_pmc_lvl, m_pmc_trd)
+
+rm(putin_mention_grouped, day_level_grouped); gc()
+
+# --- Part 2, by group: do the tone outcomes and their drivers differ by channel type? ---
+tone_data_grouped <- readRDS("Data/complete_data.rds") %>%
+  filter(!is.na(impression_putin)) %>%
+  left_join(channel_categories, by = "source") %>%
+  mutate(
+    category = replace_na(category, "Uncategorized"),
+    impression_putin = as.numeric(impression_putin),
+    support_putin = as.numeric(support_putin),
+    criticism_putin = as.numeric(criticism_putin),
+    war_mention = as.numeric(war_mention),
+    post_type = as.numeric(post_type),
+    t = as.numeric(date - min(date))
+  )
+
+# Descriptive check first -- the more basic version of the scope-condition
+# claim: if criticism barely happens at all in State channels, a regression
+# coefficient estimated within that group isn't measuring much either way.
+tone_data_grouped %>%
+  group_by(category) %>%
+  summarise(
+    n = n(),
+    impression = round(mean(impression_putin), 2),
+    support = round(mean(support_putin), 3),
+    criticism = round(mean(criticism_putin), 3),
+    war_mention = round(mean(war_mention), 3),
+    post_type = round(mean(post_type), 3)
+  ) %>%
+  arrange(desc(n))
+
+tone_outcomes <- c("impression_putin", "support_putin", "criticism_putin", "war_mention", "post_type")
+tone_groups <- sort(unique(tone_data_grouped$category))
+
+# Same three-spec battery as Part 2 (deviation / raw level / raw level +
+# trend), just looped over outcome x group instead of hand-written -- 75
+# models is too many to write out explicitly the way Part 2's 15 were.
+# Two-way clustering on date & source throughout, as before. Note PMC (4
+# channels) and State/official media (9 channels) have few source clusters,
+# so cluster-robust SEs here are less trustworthy for those two groups than
+# for the others, and less trustworthy than the day-level model above (which
+# doesn't need source clustering at all, since it's already one row per day).
+run_spec <- function(outcome, rhs, d) {
+  feols(as.formula(paste(outcome, "~", rhs)), data = d, cluster = ~date + source)
+}
+
+group_results <- list()
+for (g in tone_groups) {
+  d <- filter(tone_data_grouped, category == g)
+  for (oc in tone_outcomes) {
+    m_dev <- run_spec(oc, "occupied_deviation + russian_ler_deviation + deaths_russia_deviation + deaths_ukraine_deviation", d)
+    m_lvl <- run_spec(oc, "occupied + russian_ler + deaths_russia + deaths_ukraine", d)
+    m_trd <- run_spec(oc, "occupied + russian_ler + deaths_russia + deaths_ukraine + t", d)
+    for (spec_name in c("dev", "lvl", "trd")) {
+      m <- get(paste0("m_", spec_name))
+      ct <- as.data.frame(coeftable(m))
+      ct$var <- rownames(ct)
+      ct$group <- g; ct$outcome <- oc; ct$spec <- spec_name; ct$n <- nobs(m)
+      group_results[[length(group_results) + 1]] <- ct
+    }
+  }
+}
+
+group_results <- bind_rows(group_results) %>%
+  as_tibble() %>%
+  filter(!var %in% c("(Intercept)", "t")) %>%
+  mutate(var = str_remove(var, "_deviation$")) %>%
+  select(group, outcome, spec, var, n, Estimate, `Std. Error`, `Pr(>|t|)`)
+
+# Classify each (group, outcome, variable) cell the same way Part 2 did:
+# does the effect hold up across all three specs (Robust), only once a trend
+# is controlled for (Mixed), only in the naive raw level (Spurious -- the
+# pattern Part 1 and 2 both ruled out), only in the already-detrended
+# deviation spec (Deviation-only), or nowhere (Null).
+group_status <- group_results %>%
+  mutate(sig = `Pr(>|t|)` < 0.05, sign = sign(Estimate)) %>%
+  select(group, outcome, var, spec, Estimate, sig, sign) %>%
+  pivot_wider(names_from = spec, values_from = c(Estimate, sig, sign)) %>%
+  mutate(status = case_when(
+    sig_dev & sig_lvl & sig_trd & sign_dev == sign_lvl & sign_dev == sign_trd ~ "Robust",
+    sig_lvl & sig_trd & !sig_dev ~ "Mixed",
+    sig_lvl & !sig_trd ~ "Spurious",
+    sig_dev & !sig_lvl & !sig_trd ~ "Deviation-only",
+    TRUE ~ "Null"
+  ))
+
+group_status %>% filter(status != "Null") %>% arrange(outcome, var, group)
+
+saveRDS(group_results, "2_Descriptives/tone_group_results.rds")
